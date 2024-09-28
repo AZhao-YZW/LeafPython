@@ -21,18 +21,17 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _LEAF_CFG_H_
-#define _LEAF_CFG_H_
+#ifndef _CONTROLLER_H_
+#define _CONTROLLER_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief leafpython core type
- * 0: leafpy
- * 1: testcore
- */
-#define LEAFPY_CORE_TYPE    1
+#include "type.h"
+
+/* Init */
+void controller_init(void);
+void controller_deinit(void);
 
 #ifdef __cplusplus
 }

@@ -21,18 +21,22 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _LEAF_CFG_H_
-#define _LEAF_CFG_H_
+#ifndef _MM_H_
+#define _MM_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief leafpython core type
- * 0: leafpy
- * 1: testcore
- */
-#define LEAFPY_CORE_TYPE    1
+#include "type.h"
+
+void mm_init(u8 *heap, u32 size);
+void mm_memset(void *dst, u8 val, u32 size);
+void mm_memcpy(void *dst, void *src, u32 size);
+void mm_memcpy_s(void *dst, u32 dst_size, void *src, u32 size);
+void *mm_malloc(u32 size);
+void *mm_calloc(u32 num, u32 size);
+void *mm_realloc(void *ptr, u32 size);
+void mm_free(void *ptr);
 
 #ifdef __cplusplus
 }

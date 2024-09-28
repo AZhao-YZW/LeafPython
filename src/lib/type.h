@@ -21,18 +21,36 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _LEAF_CFG_H_
-#define _LEAF_CFG_H_
+#ifndef _TYPE_H_
+#define _TYPE_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief leafpython core type
- * 0: leafpy
- * 1: testcore
- */
-#define LEAFPY_CORE_TYPE    1
+typedef unsigned char u8;
+typedef signed char s8;
+typedef unsigned short u16;
+typedef signed short s16;
+typedef unsigned int u32;
+typedef signed int s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
+typedef float f32;
+typedef double f64;
+typedef u8 bool;
+#define true (u8)1
+#define false (u8)0
+#define NULL ((void *)0)
+
+#define min(a, b) ((a) < (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
+
+#define likely(x) __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
+#define BIT(x) (1 << (x))
 
 #ifdef __cplusplus
 }

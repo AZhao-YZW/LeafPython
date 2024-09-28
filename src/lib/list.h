@@ -21,18 +21,42 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _LEAF_CFG_H_
-#define _LEAF_CFG_H_
+#ifndef _LIST_H_
+#define _LIST_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-/**
- * @brief leafpython core type
- * 0: leafpy
- * 1: testcore
- */
-#define LEAFPY_CORE_TYPE    1
+struct list_node {
+    struct list_node *next, *prev;
+};
+
+#define container_of(ptr, type, member) ({ \
+    const typeof(((type *)0)->member) *__mptr = (ptr); \
+    (type *)((char *)__mptr - offsetof(type, member)); \
+})
+
+#define LIST_HEAD(name) struct list_node name = {&name, &name}
+
+#define INIT_LIST_HEAD(ptr) do { \
+    ptr->next = ptr; \
+    ptr->prev = ptr; \
+} while (0)
+
+#define list_for_each(pos, head) for (pos = (head)->next; pos != (head); pos = pos->next)
+#define list_for_each_entry(pos, head, member) \
+    for (pos = container_of((head)->next, typeof(*pos), member); \
+         &pos->member != (head); \
+         pos = container_of(pos->member.next, typeof(*pos), member))
+
+static inline int list_empty(const struct list_node *head) {
+    return head->next == head && head->prev == head;
+}
+
+void list_add_tail(struct list_node *new, struct list_node *head);
+void list_add_head(struct list_node *new, struct list_node *head);
+void list_del_entry(struct list_node *node);
+void list_del_init(struct list_node *node);
 
 #ifdef __cplusplus
 }
