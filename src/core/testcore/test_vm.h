@@ -28,7 +28,18 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "list.h"
+#include "test_frame.h"
 
+typedef struct {
+    struct list_head node;
+    u8 core_id;
+    u32 size;
+    test_frame_s *frames;
+} test_vm_s;
+
+int test_vm_init(u8 core_id);
+void test_vm_free(u8 core_id);
 
 #ifdef __cplusplus
 }

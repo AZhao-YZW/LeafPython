@@ -28,7 +28,6 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "test_bc.h"
 
 #ifdef __cplusplus
 }

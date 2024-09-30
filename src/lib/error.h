@@ -21,39 +21,23 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "test_vm.h"
-#include "error.h"
-#include "list.h"
-#include "mm.h"
-#include "test_frame.h"
+#ifndef _ERROR_H_
+#define _ERROR_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct list_head g_vm_list;
-bool is_vm_first_init = false;
+enum error_code_e {
+    EC_OK,
+    EC_PARAM_INVALID,
+    EC_ALLOC_FAILED,
+    EC_UNSUPPORT_OP,
+    EC_TIMEOUT,
+    EC_UNKNOWN,
+    EC_MAX = 0xFFFF
+};
 
-int test_vm_init(u8 core_id)
-{
-    test_vm_s *vm = mm_calloc(1, sizeof(test_vm_s));
-    if (vm == NULL) {
-        return EC_ALLOC_FAILED;
-    }
-    vm->core_id = core_id;
-
-    if (is_vm_first_init) {
-        INIT_LIST_HEAD(&g_vm_list);
-        is_vm_first_init = false;
-    }
-    list_add_tail(&vm->node, &g_vm_list);
-    return EC_OK;
+#ifdef __cplusplus
 }
-
-void test_vm_free(u8 core_id)
-{
-    test_vm_s *vm = NULL;
-    list_for_each_entry(vm, &g_vm_list, node) {
-        if (vm->core_id == core_id) {
-            list_del(&vm->node);
-            mm_free(vm);
-            return;
-        }
-    }
-}
+#endif
+#endif

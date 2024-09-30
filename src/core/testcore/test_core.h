@@ -27,6 +27,10 @@
 extern "C" {
 #endif
 
+#include "type.h"
+
+
+
 #ifdef __cplusplus
 }
 #endif

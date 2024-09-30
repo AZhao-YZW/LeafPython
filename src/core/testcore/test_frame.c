@@ -21,39 +21,5 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "test_vm.h"
-#include "error.h"
-#include "list.h"
-#include "mm.h"
 #include "test_frame.h"
 
-struct list_head g_vm_list;
-bool is_vm_first_init = false;
-
-int test_vm_init(u8 core_id)
-{
-    test_vm_s *vm = mm_calloc(1, sizeof(test_vm_s));
-    if (vm == NULL) {
-        return EC_ALLOC_FAILED;
-    }
-    vm->core_id = core_id;
-
-    if (is_vm_first_init) {
-        INIT_LIST_HEAD(&g_vm_list);
-        is_vm_first_init = false;
-    }
-    list_add_tail(&vm->node, &g_vm_list);
-    return EC_OK;
-}
-
-void test_vm_free(u8 core_id)
-{
-    test_vm_s *vm = NULL;
-    list_for_each_entry(vm, &g_vm_list, node) {
-        if (vm->core_id == core_id) {
-            list_del(&vm->node);
-            mm_free(vm);
-            return;
-        }
-    }
-}

@@ -30,8 +30,12 @@ extern "C" {
 #include "type.h"
 
 /* Init */
-void controller_init(void);
-void controller_deinit(void);
+int controller_init(void);
+int controller_deinit(void);
+
+/* Run */
+int controller_run_code(const char *code, u32 code_len, char *result, u32 result_len);
+int controller_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len);
 
 #ifdef __cplusplus
 }

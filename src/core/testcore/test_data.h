@@ -21,39 +21,32 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "test_vm.h"
-#include "error.h"
-#include "list.h"
-#include "mm.h"
-#include "test_frame.h"
+#ifndef _TEST_FRAME_H_
+#define _TEST_FRAME_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct list_head g_vm_list;
-bool is_vm_first_init = false;
+#include "type.h"
 
-int test_vm_init(u8 core_id)
-{
-    test_vm_s *vm = mm_calloc(1, sizeof(test_vm_s));
-    if (vm == NULL) {
-        return EC_ALLOC_FAILED;
-    }
-    vm->core_id = core_id;
+enum test_data_type_e {
+    DATA_TYPE_NUMBER,   // Number
+    DATA_TYPE_STRING,   // String
+    DATA_TYPE_BOOL,     // bool
+    DATA_TYPE_LIST,     // List
+    DATA_TYPE_TUPLE,    // Tuple
+    DATA_TYPE_SET,      // Set
+    DATA_TYPE_DICT,     // Dict
+};
 
-    if (is_vm_first_init) {
-        INIT_LIST_HEAD(&g_vm_list);
-        is_vm_first_init = false;
-    }
-    list_add_tail(&vm->node, &g_vm_list);
-    return EC_OK;
+enum test_number_type_e {
+    NUM_TYPE_INT,       // int
+    NUM_TYPE_FLOAT,     // float
+    NUM_TYPE_BOOL,      // bool
+    NUM_TYPE_COMPLEX,   // complex
+};
+
+#ifdef __cplusplus
 }
-
-void test_vm_free(u8 core_id)
-{
-    test_vm_s *vm = NULL;
-    list_for_each_entry(vm, &g_vm_list, node) {
-        if (vm->core_id == core_id) {
-            list_del(&vm->node);
-            mm_free(vm);
-            return;
-        }
-    }
-}
+#endif
+#endif

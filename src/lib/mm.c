@@ -22,18 +22,19 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "mm.h"
+#include "error.h"
 
 // 定义内存堆
-static u8 *heap_base;
-static u32 heap_size;
-static u8 *free_ptr;
+static u8 *g_heap_base;
+static u32 g_heap_size;
+static u8 *g_free_ptr;
 
 // 初始化内存堆
 void mm_init(u8 *heap, u32 size)
 {
-    heap_base = heap;
-    heap_size = size;
-    free_ptr = heap_base;
+    g_heap_base = heap;
+    g_heap_size = size;
+    g_free_ptr = g_heap_base;
 }
 
 void mm_memset(void *dst, u8 val, u32 size)
@@ -76,12 +77,12 @@ void mm_memcpy_s(void *dst, u32 dst_size, void *src, u32 size)
 // 分配内存
 void *mm_malloc(u32 size)
 {
-    if (free_ptr + size > heap_base + heap_size) {
+    if (g_free_ptr + size > g_heap_base + g_heap_size) {
         return NULL; // 内存不足
     }
 
-    void *result = free_ptr;
-    free_ptr += size;
+    void *result = g_free_ptr;
+    g_free_ptr += size;
     return result;
 }
 
@@ -102,7 +103,7 @@ void *mm_realloc(void *ptr, u32 new_size)
         return mm_malloc(new_size);
     }
 
-    u32 old_size = (u8 *)ptr - heap_base;
+    u32 old_size = (u8 *)ptr - g_heap_base;
     if (old_size >= new_size) {
         return ptr; // 不需要重新分配
     }
@@ -122,8 +123,8 @@ void mm_free(void *ptr)
         return;
     }
 
-    u32 offset = (u8 *)ptr - heap_base;
-    if (offset < heap_size) {
-        free_ptr = (u8 *)ptr;
+    u32 offset = (u8 *)ptr - g_heap_base;
+    if (offset < g_heap_size) {
+        g_free_ptr = (u8 *)ptr;
     }
 }

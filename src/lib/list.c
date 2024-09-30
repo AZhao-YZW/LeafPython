@@ -23,30 +23,3 @@
  */
 #include "list.h"
 
-void list_add_tail(struct list_node *new, struct list_node *head)
-{
-    new->next = head->next;
-    new->prev = head;
-    head->next->prev = new;
-    head->next = new;
-}
-
-void list_add_head(struct list_node *new, struct list_node *head)
-{
-    new->next = head;
-    new->prev = head->prev;
-    head->prev->next = new;
-    head->prev = new;
-}
-
-void list_del_entry(struct list_node *node)
-{
-    node->next->prev = node->prev;
-    node->prev->next = node->next;
-}
-
-void list_del_init(struct list_node *node)
-{
-    list_del_entry(node);
-    INIT_LIST_HEAD(node);
-}

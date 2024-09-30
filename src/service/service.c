@@ -22,13 +22,17 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "leafpy_api.h"
+#include "type.h"
+#include "controller.h"
 
 /*****************************************************************************
  *                                   Init
  *****************************************************************************/
 int leafpy_init(void)
 {
-    return 0;
+    int ret;
+    ret = controller_init();
+    return ret;
 }
 
 int leafpy_deinit(void)
@@ -39,12 +43,14 @@ int leafpy_deinit(void)
 /*****************************************************************************
  *                                   Run
  *****************************************************************************/
-int leafpy_run_code(const char *code, int code_len, char *result, int result_len)
+int leafpy_run_code(const char *code, u32 code_len, char *result, u32 result_len)
 {
-    return 0;
+    int ret;
+    ret = controller_run_code(code, code_len, result, result_len);
+    return ret;
 }
 
-int leafpy_run_bytecode(const char *bytecode, int bytecode_len, char *result, int result_len)
+int leafpy_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
     return 0;
 }
@@ -73,17 +79,17 @@ int leafpy_register_cfunc(const char *name, void (*func)(void))
 /*****************************************************************************
  *                                 Muti core
  *****************************************************************************/
-int leafpy_add_core(const char *core_name, unsigned int core_id)
+int leafpy_add_core(const char *core_name, u32 core_id)
 {
     return 0;
 }
 
-int leafpy_deinit_core(unsigned int core_id)
+int leafpy_deinit_core(u32 core_id)
 {
     return 0;
 }
 
-int leafpy_remove_core(unsigned int core_id)
+int leafpy_remove_core(u32 core_id)
 {
     return 0;
 }
@@ -93,7 +99,7 @@ int leafpy_get_core_id(const char *core_name)
     return 0;
 }
 
-unsigned int leafpy_get_core_num(void)
+u32 leafpy_get_core_num(void)
 {
     return 1;
 }
@@ -109,7 +115,7 @@ void leafpy_set_debug_off(void)
 {
 }
 
-void leafpy_print_core_info(unsigned int core_id)
+void leafpy_print_core_info(u32 core_id)
 {
 }
 

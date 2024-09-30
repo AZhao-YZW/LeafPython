@@ -28,11 +28,26 @@ extern "C" {
 #endif
 
 /**
- * @brief leafpython core type
+ * @brief leafpython default core type
  * 0: leafpy
  * 1: testcore
  */
-#define LEAFPY_CORE_TYPE    1
+#define CORE_TYPE_LEAFPY            0
+#define CORE_TYPE_TESTCORE          1
+#define LEAFPY_DEFAULT_CORE_TYPE    CORE_TYPE_TESTCORE
+
+/**
+ * @brief enable core type switch
+ * 0: disable
+ * 1: enable
+ */
+#define ENABLE_CORE_LEAFPY          1
+#define ENABLE_CORE_TESTCORE        1
+
+/**
+ * @brief default core id
+ */
+#define DEFAULT_CORE_ID             0
 
 /**
  * @brief leafpython log level
@@ -42,7 +57,7 @@ extern "C" {
  * 3: LOG_ERROR
  * 4: LOG_FATAL
  */
-#define LEAFPY_LOG_LEVEL    0
+#define LEAFPY_LOG_LEVEL            0
 
 #ifdef __cplusplus
 }

@@ -22,4 +22,32 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "controller.h"
+#include "leafpy_cfg.h"
+#include "error.h"
+#include "test_vm.h"
 
+int controller_init(void)
+{
+#if (ENABLE_CORE_TESTCORE == 1) && (LEAFPY_DEFAULT_CORE_TYPE == CORE_TYPE_TESTCORE)
+    test_vm_init(DEFAULT_CORE_ID);
+#endif
+    return EC_OK;
+}
+
+int controller_run_code(const char *code, u32 code_len, char *result, u32 result_len)
+{
+    if (code == NULL || code_len == 0 || result == NULL) {
+        return EC_PARAM_INVALID;
+    }
+
+    return EC_OK;
+}
+
+int controller_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
+{
+    if (bytecode == NULL || bytecode_len == 0 || result == NULL) {
+        return EC_PARAM_INVALID;
+    }
+
+    return EC_OK;
+}

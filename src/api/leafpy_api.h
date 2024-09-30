@@ -37,8 +37,8 @@ int leafpy_init(void);
 int leafpy_deinit(void);
 
 /* Run */
-int leafpy_run_code(const char *code, int code_len, char *result, int result_len);
-int leafpy_run_bytecode(const char *bytecode, int bytecode_len, char *result, int result_len);
+int leafpy_run_code(const char *code, unsigned int code_len, char *result, unsigned int result_len);
+int leafpy_run_bytecode(const char *bytecode, unsigned int bytecode_len, char *result, unsigned int result_len);
 int leafpy_run_file(const char *filepath, enum leafpy_file_type type, char *result, int result_len);
 
 /* Compile */
