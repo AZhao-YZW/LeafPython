@@ -90,7 +90,7 @@ void *mm_calloc(u32 num, u32 size)
 {
     void *ptr = mm_malloc(num * size);
     if (ptr != NULL) {
-        memset(ptr, 0, num * size);
+        mm_memset(ptr, 0, num * size);
     }
     return ptr;
 }
@@ -109,7 +109,7 @@ void *mm_realloc(void *ptr, u32 new_size)
 
     void *new_ptr = mm_malloc(new_size);
     if (new_ptr != NULL) {
-        memcpy(new_ptr, ptr, old_size);
+        mm_memcpy(new_ptr, ptr, old_size);
         mm_free(ptr);
     }
     return new_ptr;

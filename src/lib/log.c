@@ -21,47 +21,40 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _TEST_BC_H_
-#define _TEST_BC_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
-
+#include "log.h"
 #include "type.h"
+#include "leafpy_cfg.h"
+#include <stdarg.h>
+#if defined(__linux__) || defined(_WIN32) || defined(_WIN64)
+#include <stdio.h>
+#else
+void printf(const char *fmt, va_list ap) {}
+#endif
 
-enum test_bc_op_e {
-    TEST_BC_NOP = 0,
-    TEST_BC_MOV,
-    TEST_BC_INC,
-    TEST_BC_DEC,
-    TEST_BC_ADD,
-    TEST_BC_SUB,
-    TEST_BC_MUL,
-    TEST_BC_DIV,
-    TEST_BC_CMP,
-    TEST_BC_JZ,
-    TEST_BC_JNZ,
-    TEST_BC_JMP,
-    TEST_BC_PRINT,
-    TEST_BC_EXIT,
-    TEST_BC_CALL,
-    TEST_BC_RET,
-    TEST_BC_FUNC,
-    TEST_BC_MAX
-};
+u8 g_log_level = LEAFPY_LOG_LEVEL;
 
-typedef struct test_bc_s {
-    u8 op;      /* enum test_bc_op_e */
-    u32 arg1;
-    u32 arg2;
-    u32 arg3;
-    u32 pos;
-    u32 next_pos;
-} test_bc_s;
-
-void test_bc_proc(test_bc_s *bc);
-
-#ifdef __cplusplus
+void log_set_level(enum log_level_e level)
+{
+    g_log_level = level;
 }
-#endif
-#endif
+
+void log_printf(enum log_level_e level, const char *fmt, ...)
+{
+    char *log_level_str[] = { "debug", "info ", "warn ", "error", "fatal" };
+    va_list ap;
+    va_start(ap, fmt);
+    if (level <= g_log_level) {
+        printf("[%s] ", log_level_str[level]);
+        printf(fmt, ap);
+    }
+    va_end(ap);
+}
+
+void core_printf(const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    printf("[core] ");
+    printf(fmt, ap);
+    va_end(ap);
+}

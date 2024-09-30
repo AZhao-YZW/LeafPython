@@ -54,6 +54,14 @@ int leafpy_remove_core(unsigned int core_id);
 int leafpy_get_core_id(const char *core_name);
 unsigned int leafpy_get_core_num(void);
 
+/* Log */
+#define __EXTERN_LEAFPY_LOG 1
+#if (__EXTERN_LEAFPY_LOG == 1)
+enum log_level_e;
+void log_set_level(enum log_level_e level);
+void log_printf(enum log_level_e level, const char *fmt, ...);
+#endif
+
 /* Debug */
 void leafpy_set_debug_on(void);
 void leafpy_set_debug_off(void);

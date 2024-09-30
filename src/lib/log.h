@@ -21,45 +21,23 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _TEST_BC_H_
-#define _TEST_BC_H_
+#ifndef _LOG_H_
+#define _LOG_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "type.h"
-
-enum test_bc_op_e {
-    TEST_BC_NOP = 0,
-    TEST_BC_MOV,
-    TEST_BC_INC,
-    TEST_BC_DEC,
-    TEST_BC_ADD,
-    TEST_BC_SUB,
-    TEST_BC_MUL,
-    TEST_BC_DIV,
-    TEST_BC_CMP,
-    TEST_BC_JZ,
-    TEST_BC_JNZ,
-    TEST_BC_JMP,
-    TEST_BC_PRINT,
-    TEST_BC_EXIT,
-    TEST_BC_CALL,
-    TEST_BC_RET,
-    TEST_BC_FUNC,
-    TEST_BC_MAX
+enum log_level_e {
+    LOG_DEBUG = 0,
+    LOG_INFO,
+    LOG_WARN,
+    LOG_ERROR,
+    LOG_FATAL,
 };
 
-typedef struct test_bc_s {
-    u8 op;      /* enum test_bc_op_e */
-    u32 arg1;
-    u32 arg2;
-    u32 arg3;
-    u32 pos;
-    u32 next_pos;
-} test_bc_s;
-
-void test_bc_proc(test_bc_s *bc);
+void log_set_level(enum log_level_e level);
+void log_printf(enum log_level_e level, const char *fmt, ...);
+void core_printf(const char *fmt, ...);
 
 #ifdef __cplusplus
 }

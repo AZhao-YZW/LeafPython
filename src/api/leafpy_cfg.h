@@ -34,6 +34,16 @@ extern "C" {
  */
 #define LEAFPY_CORE_TYPE    1
 
+/**
+ * @brief leafpython log level
+ * 0: LOG_DEBUG
+ * 1: LOG_INFO
+ * 2: LOG_WARN
+ * 3: LOG_ERROR
+ * 4: LOG_FATAL
+ */
+#define LEAFPY_LOG_LEVEL    0
+
 #ifdef __cplusplus
 }
 #endif
