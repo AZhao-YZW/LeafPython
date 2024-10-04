@@ -24,6 +24,7 @@
 #include "leafpy_api.h"
 #include "type.h"
 #include "controller.h"
+#include <stdarg.h>
 
 /*****************************************************************************
  *                                   Init
@@ -64,14 +65,6 @@ int leafpy_run_file(const char *filepath, enum leafpy_file_type type, char *resu
  *                                  Compile
  *****************************************************************************/
 int leafpy_compile_bytecode(const char *code, int code_len, char *bytecode, int bytecode_len)
-{
-    return 0;
-}
-
-/*****************************************************************************
- *                            Register C functions
- *****************************************************************************/
-int leafpy_register_cfunc(const char *name, void (*func)(void))
 {
     return 0;
 }

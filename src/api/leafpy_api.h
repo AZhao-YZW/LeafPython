@@ -27,6 +27,8 @@
 extern "C" {
 #endif
 
+#include "register.h"
+
 enum leafpy_file_type {
     LEAFPY_FILE_TYPE_CODE,
     LEAFPY_FILE_TYPE_BYTECODE
@@ -45,7 +47,35 @@ int leafpy_run_file(const char *filepath, enum leafpy_file_type type, char *resu
 int leafpy_compile_bytecode(const char *code, int code_len, char *bytecode, int bytecode_len);
 
 /* Register C functions */
-int leafpy_register_cfunc(const char *name, void (*func)(void));
+/**
+ * @brief get cfunc type
+ * @param type_name support: VOID, U8, U16, U32, U64, S8, S16, S32, S64, F32, F64
+ * @param p_layer pointer layer, support 0 ~ 15
+ */
+#define CFUNC_TYPE(type_name, p_layer) ( \
+    ((leafpy_cfunc_type)(CFUNC_TYPE_CODE(type_name)) << 4) | \
+    ((leafpy_cfunc_type)(CFUNC_P_LAYER(p_layer))) \
+)
+
+/**
+ * @brief leafpython register cfunc
+ * @param module module name
+ * @param pyfunc python function name
+ * @param ret_type return type, get by macro CFUNC_TYPE
+ * @param arg_num argument number
+ * @param ... argument types, get by macro CFUNC_TYPE
+ * @return 0 success, -1 failed
+ */
+#define LEAFPY_REGISTER_CFUNC(module, pyfunc, ret_type, arg_num, ...) \
+    ({ \
+        int ret = 0; \
+        if (NARG(__VA_ARGS__) != arg_num) { \
+            ret = -1; \
+        } else { \
+            ret = leafpy_register_cfunc(module, pyfunc, ret_type, arg_num, ##__VA_ARGS__); \
+        } \
+        ret; \
+    })
 
 /* Muti core */
 int leafpy_add_core(const char *core_name, unsigned int core_id);

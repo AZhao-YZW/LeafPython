@@ -21,13 +21,28 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _PLAT_H_
-#define _PLAT_H_
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "leafpy_api.h"
+#include <stdio.h>
 
-#ifdef __cplusplus
+int test_c_func(int arg1, char *arg2, float arg3)
+{
+    printf("test_c_func: %d, %s, %.2f\n", arg1, arg2, arg3);
+    return 0;
 }
-#endif
-#endif
+
+int module_register(void)
+{
+    int ret;
+    ret = LEAFPY_REGISTER_CFUNC("test_c",
+                                "test_c_func",
+                                CFUNC_TYPE(int, 0),
+                                3,
+                                CFUNC_TYPE(int, 0),
+                                CFUNC_TYPE(char, 1),
+                                CFUNC_TYPE(float, 0));
+    if (ret != 0) {
+        printf("LEAFPY_REGISTER_CFUNC failed, ret[%d]\n", ret);
+        return -1;
+    }
+    return 0;
+}
