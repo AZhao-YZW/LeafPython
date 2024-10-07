@@ -46,6 +46,75 @@ enum test_number_type_e {
     NUM_TYPE_COMPLEX,   // complex
 };
 
+/**
+ * Base Object
+ * |-- Root Object
+ *     |-- Number Object
+ *     |-- String Object
+ *     ...
+ */
+
+/* Base Object */
+typedef struct {
+    u32 obj_id;
+    char *obj_name;
+    u8 obj_type;
+    u32 parent_id;
+    u32 child_num;
+} base_obj_s;
+
+/* Root Object */
+typedef struct {
+    base_obj_s base_obj;
+} root_obj_s;
+
+/* Number Object */
+typedef struct {
+    base_obj_s base_obj;
+} number_obj_s;
+
+typedef struct {
+    number_obj_s num_obj;
+} int_obj_s;
+
+typedef struct {
+    number_obj_s num_obj;
+} float_obj_s;
+
+typedef struct {
+    number_obj_s num_obj;
+} complex_obj_s;
+
+/* bool Object */
+typedef struct {
+    number_obj_s num_obj;
+} bool_obj_s;
+
+/* String Object */
+typedef struct {
+    base_obj_s base_obj;
+} string_obj_s;
+
+/* List Object */
+typedef struct {
+    base_obj_s base_obj;
+} list_obj_s;
+
+/* Tuple Object */
+typedef struct {
+    base_obj_s base_obj;
+} tuple_obj_s;
+
+/* Set Object */
+typedef struct {
+    base_obj_s base_obj;
+} set_obj_s;
+
+/* Dict Object */
+typedef struct {
+    base_obj_s base_obj;
+} dict_obj_s;
+
 #ifdef __cplusplus
 }
 #endif
