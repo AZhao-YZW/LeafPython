@@ -62,23 +62,30 @@ enum cfunc_type_code_e {
     CFUNC_f32  = 0x9,
     CFUNC_f64  = 0xa,
     /* alias */
-    CFUNC_char = CFUNC_u8,
-    CFUNC_short = CFUNC_s16,
+    CFUNC_char   = CFUNC_s8,
+    CFUNC_uchar  = CFUNC_u8,
+    CFUNC_short  = CFUNC_s16,
+    CFUNC_ushort = CFUNC_u16,
 #if defined(IS_16_BIT_PLATFORM)
-    CFUNC_int  = CFUNC_s16,
-    CFUNC_long  = CFUNC_s32,
+    CFUNC_int    = CFUNC_s16,
+    CFUNC_uint   = CFUNC_u16,
+    CFUNC_long   = CFUNC_s32,
+    CFUNC_ulong  = CFUNC_u32,
 #elif defined(IS_32_BIT_PLATFORM)
-    CFUNC_int  = CFUNC_s32,
-    CFUNC_long  = CFUNC_s32,
+    CFUNC_int    = CFUNC_s32,
+    CFUNC_uint   = CFUNC_u32,
+    CFUNC_long   = CFUNC_s32,
+    CFUNC_ulong  = CFUNC_u32,
 #elif defined(IS_64_BIT_PLATFORM)
-    CFUNC_int  = CFUNC_s32,
-    CFUNC_long  = CFUNC_s64,
+    CFUNC_int    = CFUNC_s32,
+    CFUNC_uint   = CFUNC_u32,
+    CFUNC_long   = CFUNC_s64,
+    CFUNC_ulong  = CFUNC_u64,
 #endif
-    CFUNC_uint  = CFUNC_int,
-    CFUNC_ulong  = CFUNC_long,
-    CFUNC_long_long  = CFUNC_s64,
+    CFUNC_longlong  = CFUNC_s64,
+    CFUNC_ulonglong = CFUNC_u64,
     CFUNC_float  = CFUNC_f32,
-    CFUNC_double  = CFUNC_f64,
+    CFUNC_double = CFUNC_f64,
 };
 
 enum cfunc_pointer_layer_e {
@@ -127,13 +134,8 @@ enum cfunc_pointer_layer_e {
 #define NARG(...) NARG_(__VA_ARGS__, RSEQ_N)
 
 typedef unsigned char leafpy_cfunc_type;
-typedef struct {
-    leafpy_cfunc_type ret_type;
-    unsigned int arg_num;
-    leafpy_cfunc_type *arg_types;
-} leafpy_cfunc_info_s;
 
-int leafpy_register_cfunc(const char *module, const char *pyfunc,
+int leafpy_register_cfunc(const char *module, const char *pyfunc, const void *cfunc,
                           leafpy_cfunc_type ret_type, unsigned int arg_num, ...);
 
 #ifdef __cplusplus

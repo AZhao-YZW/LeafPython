@@ -61,18 +61,22 @@ int leafpy_compile_bytecode(const char *code, int code_len, char *bytecode, int 
  * @brief leafpython register cfunc
  * @param module module name
  * @param pyfunc python function name
+ * @param cfunc c function
  * @param ret_type return type, get by macro CFUNC_TYPE
  * @param arg_num argument number
  * @param ... argument types, get by macro CFUNC_TYPE
  * @return 0 success, -1 failed
+ * @note type support: void, u8, u16, u32, u64, s8, s16, s32, s64, f32, f64,
+ *                     char, uchar, short, ushort, int, uint, long, ulong, longlong,
+ *                     ulonglong, float, double
  */
-#define LEAFPY_REGISTER_CFUNC(module, pyfunc, ret_type, arg_num, ...) \
+#define LEAFPY_REGISTER_CFUNC(module, pyfunc, cfunc, ret_type, arg_num, ...) \
     ({ \
         int ret = 0; \
         if (NARG(__VA_ARGS__) != arg_num) { \
             ret = -1; \
         } else { \
-            ret = leafpy_register_cfunc(module, pyfunc, ret_type, arg_num, ##__VA_ARGS__); \
+            ret = leafpy_register_cfunc(module, pyfunc, cfunc, ret_type, arg_num, ##__VA_ARGS__); \
         } \
         ret; \
     })

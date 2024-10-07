@@ -27,12 +27,19 @@
 extern "C" {
 #endif
 
+#include "plat.h"
+
 typedef unsigned char u8;
 typedef signed char s8;
 typedef unsigned short u16;
 typedef signed short s16;
+#if defined(IS_16_BIT_PLATFORM)
+typedef unsigned long u32;
+typedef signed long s32;
+#elif defined(IS_32_BIT_PLATFORM) || defined(IS_64_BIT_PLATFORM)
 typedef unsigned int u32;
 typedef signed int s32;
+#endif
 typedef unsigned long long u64;
 typedef signed long long s64;
 typedef float f32;

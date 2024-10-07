@@ -24,7 +24,16 @@
 #include "register.h"
 #include <stdarg.h>
 
-static int register_cfunc(const char *module, const char *pyfunc, leafpy_cfunc_info_s *info)
+typedef struct {
+    const char *module;
+    const char *pyfunc;
+    const void *cfunc;
+    leafpy_cfunc_type ret_type;
+    unsigned int arg_num;
+    leafpy_cfunc_type *arg_types;
+} leafpy_register_info_s;
+
+static int register_cfunc(leafpy_register_info_s *info)
 {
     return 0;
 }
@@ -32,21 +41,25 @@ static int register_cfunc(const char *module, const char *pyfunc, leafpy_cfunc_i
 /*****************************************************************************
  *                            Register C functions
  *****************************************************************************/
-int leafpy_register_cfunc(const char *module, const char *pyfunc,
+int leafpy_register_cfunc(const char *module, const char *pyfunc, const void *cfunc,
                           leafpy_cfunc_type ret_type, unsigned int arg_num, ...)
 {
-    leafpy_cfunc_info_s info = {0};
+    leafpy_register_info_s info = {0};
     leafpy_cfunc_type arg_types[arg_num];
     int i, ret;
     va_list ap;
     va_start(ap, arg_num);
+    info.module = module;
+    info.pyfunc = pyfunc;
+    info.cfunc = cfunc;
     info.ret_type = ret_type;
     info.arg_num = arg_num;
     info.arg_types = arg_types;
     for (i = 0; i < arg_num; i++) {
+        // ... auto convert type to int
         info.arg_types[i] = (leafpy_cfunc_type)va_arg(ap, int);
     }
     va_end(ap);
-    ret = register_cfunc(module, pyfunc, &info);
+    ret = register_cfunc(&info);
     return ret;
 }
