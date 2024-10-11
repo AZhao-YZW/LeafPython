@@ -21,21 +21,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#include "test_core.h"
-#include "error.h"
-#include "mm.h"
+#ifndef _TEST_GC_H_
+#define _TEST_GC_H_
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-static void obj_mng_init(obj_mng_s *obj_mng)
-{
-    obj_mng->obj_num = 0;
-}
+#include "type.h"
 
-int test_core_init(void)
-{
-    obj_mng_s *obj_mng = mm_malloc(sizeof(obj_mng_s));
-    if (obj_mng != NULL) {
-        return EC_ALLOC_FAILED;
-    }
-    obj_mng_init(obj_mng);
-    return EC_OK;
+#ifdef __cplusplus
 }
+#endif
+#endif

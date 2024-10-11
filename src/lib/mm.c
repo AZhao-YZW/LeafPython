@@ -22,109 +22,50 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "mm.h"
+#include "leafpy_cfg.h"
+#include "log.h"
 #include "error.h"
 
-// 定义内存堆
-static u8 *g_heap_base;
-static u32 g_heap_size;
-static u8 *g_free_ptr;
+#if (LEAFPY_USE_MEM_MODE == LEAFPY_USE_STATIC_MEM)
+u8 g_static_mem[LEAFPY_MAX_MEM_SIZE] = {0};
 
-// 初始化内存堆
-void mm_init(u8 *heap, u32 size)
+void *leafpy_malloc(u32 size)
 {
-    g_heap_base = heap;
-    g_heap_size = size;
-    g_free_ptr = g_heap_base;
+    return NULL;
 }
 
-void mm_memset(void *dst, u8 val, u32 size)
+void leafpy_free(void *ptr)
 {
-    u8 *ptr = (u8 *)dst;
-    
-    while (size--) {
-        *ptr = val;
-        ptr++;
-    }
 }
 
-void mm_memcpy(void *dst, void *src, u32 size)
-{
-    u8 *dst_ptr = (u8 *)dst;
-    const u8 *src_ptr = (const u8 *)src;
+#elif (LEAFPY_USE_MEM_MODE == LEAFPY_USE_DYNAMIC_MEM)
 
-    while (size--) {
-        *dst_ptr = *src_ptr;
-        dst_ptr++;
-        src_ptr++;
-    }
+#if defined(__linux__) || defined(_WIN32) || defined(_WIN64)
+#include <stdlib.h>
+
+void *leafpy_malloc(u32 size)
+{
+    return malloc(size);
 }
 
-void mm_memcpy_s(void *dst, u32 dst_size, void *src, u32 size)
+void leafpy_free(void *ptr)
 {
-    u8 *dst_ptr = (u8 *)dst;
-    const u8 *src_ptr = (const u8 *)src;
-
-    while (size--) {
-        if (dst_ptr - (u8 *)dst >= dst_size) {
-            return; // 目标缓冲区溢出
-        }
-        *dst_ptr = *src_ptr;
-        dst_ptr++;
-        src_ptr++;
-    }
+    free(ptr);
 }
+#endif
 
-// 分配内存
+#endif
+
 void *mm_malloc(u32 size)
 {
-    if (g_free_ptr + size > g_heap_base + g_heap_size) {
-        return NULL; // 内存不足
-    }
-
-    void *result = g_free_ptr;
-    g_free_ptr += size;
-    return result;
-}
-
-// 分配并初始化为零的内存
-void *mm_calloc(u32 num, u32 size)
-{
-    void *ptr = mm_malloc(num * size);
-    if (ptr != NULL) {
-        mm_memset(ptr, 0, num * size);
+    void *ptr = leafpy_malloc(size);
+    if (ptr == NULL) {
+        core_printf("leafpy_malloc failed, size: %u\n", size);
     }
     return ptr;
 }
 
-// 重新分配内存
-void *mm_realloc(void *ptr, u32 new_size)
-{
-    if (ptr == NULL) {
-        return mm_malloc(new_size);
-    }
-
-    u32 old_size = (u8 *)ptr - g_heap_base;
-    if (old_size >= new_size) {
-        return ptr; // 不需要重新分配
-    }
-
-    void *new_ptr = mm_malloc(new_size);
-    if (new_ptr != NULL) {
-        mm_memcpy(new_ptr, ptr, old_size);
-        mm_free(ptr);
-    }
-    return new_ptr;
-}
-
-// 释放内存
 void mm_free(void *ptr)
 {
-    if (ptr == NULL) {
-        return;
-    }
-
-    u32 offset = (u8 *)ptr - g_heap_base;
-    if (offset < g_heap_size) {
-        g_free_ptr = (u8 *)ptr;
-    }
+    leafpy_free(ptr);
 }

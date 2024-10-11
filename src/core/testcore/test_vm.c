@@ -28,11 +28,11 @@
 #include "test_frame.h"
 
 struct list_head g_vm_list;
-bool is_vm_first_init = false;
+bool is_vm_first_init = true;
 
 int test_vm_init(u8 core_id)
 {
-    test_vm_s *vm = mm_calloc(1, sizeof(test_vm_s));
+    test_vm_s *vm = mm_malloc(sizeof(test_vm_s));
     if (vm == NULL) {
         return EC_ALLOC_FAILED;
     }

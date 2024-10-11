@@ -29,13 +29,7 @@ extern "C" {
 
 #include "type.h"
 
-void mm_init(u8 *heap, u32 size);
-void mm_memset(void *dst, u8 val, u32 size);
-void mm_memcpy(void *dst, void *src, u32 size);
-void mm_memcpy_s(void *dst, u32 dst_size, void *src, u32 size);
 void *mm_malloc(u32 size);
-void *mm_calloc(u32 num, u32 size);
-void *mm_realloc(void *ptr, u32 size);
 void mm_free(void *ptr);
 
 #ifdef __cplusplus

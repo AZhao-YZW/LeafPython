@@ -28,8 +28,14 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "test_data.h"
 
+/* Object Management */
+typedef struct {
+    u32 obj_num;
+} obj_mng_s;
 
+int test_core_init(void);
 
 #ifdef __cplusplus
 }

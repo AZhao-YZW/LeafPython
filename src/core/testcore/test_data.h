@@ -28,8 +28,12 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "list.h"
+
+#define GLOBAL_OBJ_ID   0
 
 enum test_data_type_e {
+    DATA_TYPE_OBJECT,   // object
     DATA_TYPE_NUMBER,   // Number
     DATA_TYPE_STRING,   // String
     DATA_TYPE_BOOL,     // bool
@@ -47,7 +51,7 @@ enum test_number_type_e {
 };
 
 /**
- * Base Object
+ * Global Object
  * |-- Root Object
  *     |-- Number Object
  *     |-- String Object
@@ -56,12 +60,20 @@ enum test_number_type_e {
 
 /* Base Object */
 typedef struct {
+    u8 obj_type : 4;
+    u8 free_flag : 1;   /* 0: using, 1: can be freed */
+    u8 rsv1 : 3;
+    u8 rsv2[3];
     u32 obj_id;
-    char *obj_name;
-    u8 obj_type;
     u32 parent_id;
     u32 child_num;
+    char *obj_name;
 } base_obj_s;
+
+/* Global Object */
+typedef struct {
+    base_obj_s base_obj;
+} global_obj_s;
 
 /* Root Object */
 typedef struct {
@@ -114,6 +126,8 @@ typedef struct {
 typedef struct {
     base_obj_s base_obj;
 } dict_obj_s;
+
+int test_data_init(void);
 
 #ifdef __cplusplus
 }

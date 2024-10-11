@@ -59,6 +59,27 @@ extern "C" {
  */
 #define LEAFPY_LOG_LEVEL            0
 
+/**
+ * @brief leafpython use memory mode
+ * 0: use static memory
+ * 1: use dynamic memory
+ */
+#define LEAFPY_USE_STATIC_MEM       0
+#define LEAFPY_USE_DYNAMIC_MEM      1
+#define LEAFPY_USE_MEM_MODE         LEAFPY_USE_DYNAMIC_MEM
+
+#if (LEAFPY_USE_MEM_MODE == LEAFPY_USE_STATIC_MEM)
+#define LEAFPY_MAX_MEM_SIZE         (1024 * 4)
+#elif (LEAFPY_USE_MEM_MODE == LEAFPY_USE_DYNAMIC_MEM)
+#ifdef IS_16_BIT_PLATFORM
+void *leafpy_malloc(unsigned long size) __attribute__((weak));
+#elif defined(IS_32_BIT_PLATFORM) || defined(IS_64_BIT_PLATFORM)
+void *leafpy_malloc(unsigned int size) __attribute__((weak));
+#endif
+void leafpy_free(void *ptr) __attribute__((weak));
+#endif
+
+
 #ifdef __cplusplus
 }
 #endif
