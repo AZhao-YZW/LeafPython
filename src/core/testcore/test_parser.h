@@ -28,6 +28,10 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "test_frame.h"
+
+int test_parser_code_gen_frame(const char *code, u32 code_len, test_frame_s *frame);
+int test_parser_bc_gen_frame(const char *bytecode, u32 bytecode_len, test_frame_s *frame);
 
 #ifdef __cplusplus
 }

@@ -22,4 +22,30 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_frame.h"
+#include "mm.h"
+#include "log.h"
+#include "test_bc.h"
 
+test_frame_s *test_frame_init(u32 bc_num)
+{
+    test_frame_s *frame = mm_malloc(sizeof(test_frame_s));
+    int bc_list_size;
+
+    if (frame == NULL) {
+        core_printf("[test_frame] init alloc frame failed\n");
+        return NULL;
+    }
+    mm_memset_s(frame, sizeof(*frame), 0, sizeof(*frame));
+
+    bc_list_size = bc_num * sizeof(test_bc_s);
+    frame->bc_list = mm_malloc(bc_list_size);
+    if (frame->bc_list == NULL) {
+        core_printf("[test_frame] init alloc bc list failed\n");
+        mm_free(frame);
+        return NULL;
+    }
+    mm_memset_s(frame->bc_list, bc_list_size, 0, bc_list_size);
+    frame->bc_num = bc_num;
+    frame->idx = 0;
+    return frame;
+}

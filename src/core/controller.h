@@ -32,6 +32,7 @@ extern "C" {
 /* Init */
 int controller_init(void);
 int controller_deinit(void);
+int controller_add_core(u8 core_id);
 
 /* Run */
 int controller_run_code(const char *code, u32 code_len, char *result, u32 result_len);

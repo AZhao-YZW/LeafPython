@@ -23,6 +23,7 @@
  */
 #include "mm.h"
 #include "leafpy_cfg.h"
+#include "type.h"
 #include "log.h"
 #include "error.h"
 
@@ -38,10 +39,16 @@ void leafpy_free(void *ptr)
 {
 }
 
+int leafpy_memset_s(void *dest, u32 dsize, int ch, u32 count)
+{
+    return EC_UNKNOWN;
+}
+
 #elif (LEAFPY_USE_MEM_MODE == LEAFPY_USE_DYNAMIC_MEM)
 
 #if defined(__linux__) || defined(_WIN32) || defined(_WIN64)
 #include <stdlib.h>
+#include <string.h>
 
 void *leafpy_malloc(u32 size)
 {
@@ -52,6 +59,15 @@ void leafpy_free(void *ptr)
 {
     free(ptr);
 }
+
+int leafpy_memset_s(void *dest, u32 dsize, int ch, u32 count)
+{
+    if (dest == NULL || dsize == 0 || count > dsize) {
+        return EC_PARAM_INVALID;
+    }
+    (void)memset(dest, ch, count);
+    return EC_OK;
+}
 #endif
 
 #endif
@@ -60,7 +76,7 @@ void *mm_malloc(u32 size)
 {
     void *ptr = leafpy_malloc(size);
     if (ptr == NULL) {
-        core_printf("leafpy_malloc failed, size: %u\n", size);
+        core_printf("[mm] leafpy_malloc failed, size[%u]\n", size);
     }
     return ptr;
 }
@@ -68,4 +84,14 @@ void *mm_malloc(u32 size)
 void mm_free(void *ptr)
 {
     leafpy_free(ptr);
+}
+
+int mm_memset_s(void *dest, u32 dsize, int ch, u32 count)
+{
+    int ret;
+    ret = leafpy_memset_s(dest, dsize, ch, count);
+    if (ret != EC_OK) {
+        core_printf("[mm] leafpy_memset_s failed, dsize[%u] count[%u]\n", dsize, count);
+    }
+    return ret;
 }

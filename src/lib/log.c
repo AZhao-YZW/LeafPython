@@ -28,7 +28,8 @@
 #if defined(__linux__) || defined(_WIN32) || defined(_WIN64)
 #include <stdio.h>
 #else
-void printf(const char *fmt, va_list ap) {}
+void printf(const char *fmt, ...) {}
+void vprintf(const char *fmt, va_list ap) {}
 #endif
 
 u8 g_log_level = LEAFPY_LOG_LEVEL;
@@ -43,9 +44,9 @@ void log_printf(enum log_level_e level, const char *fmt, ...)
     char *log_level_str[] = { "debug", "info ", "warn ", "error", "fatal" };
     va_list ap;
     va_start(ap, fmt);
-    if (level <= g_log_level) {
+    if (level >= g_log_level && level < LOG_LEVEL_MAX) {
         printf("[%s] ", log_level_str[level]);
-        printf(fmt, ap);
+        vprintf(fmt, ap);
     }
     va_end(ap);
 }

@@ -23,19 +23,66 @@
  */
 #include "test_core.h"
 #include "error.h"
+#include "list.h"
 #include "mm.h"
+#include "test_bc.h"
 
-static void obj_mng_init(obj_mng_s *obj_mng)
-{
-    obj_mng->obj_num = 0;
-}
+struct list_head g_core_list;
 
-int test_core_init(void)
+int test_core_init(u8 core_id)
 {
-    obj_mng_s *obj_mng = mm_malloc(sizeof(obj_mng_s));
-    if (obj_mng != NULL) {
+    test_core_s *core = mm_malloc(sizeof(test_core_s));
+    if (core == NULL) {
         return EC_ALLOC_FAILED;
     }
-    obj_mng_init(obj_mng);
+    core->core_id = core_id;
+    INIT_LIST_HEAD(&g_core_list);
+    list_add_tail(&core->node, &g_core_list);
     return EC_OK;
+}
+
+int test_core_free(u8 core_id)
+{
+    test_core_s *core = NULL;
+    list_for_each_entry(core, &g_core_list, node) {
+        if (core->core_id == core_id) {
+            list_del(&core->node);
+            mm_free(core);
+            return EC_OK;
+        }
+    }
+    return EC_INVALID_CORE_ID;
+}
+
+int test_core_add(u8 core_id)
+{
+    test_core_s *core = NULL;
+    list_for_each_entry(core, &g_core_list, node) {
+        if (core->core_id == core_id) {
+            return EC_INVALID_CORE_ID;
+        }
+    }
+    core = mm_malloc(sizeof(test_core_s));
+    if (core == NULL) {
+        return EC_ALLOC_FAILED;
+    }
+    core->core_id = core_id;
+    list_add_tail(&core->node, &g_core_list);
+    return EC_OK;
+}
+
+static int test_core_run_bc_proc(test_core_s *core, test_bc_s *bc)
+{
+    return EC_OK;
+}
+
+int test_core_run_bc(u8 core_id, test_bc_s *bc)
+{
+    test_core_s *core = NULL;
+    list_for_each_entry(core, &g_core_list, node) {
+        if (core->core_id == core_id) {
+            return test_core_run_bc_proc(core, bc);
+        }
+    }
+    return EC_INVALID_CORE_ID;
 }

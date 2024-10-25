@@ -33,6 +33,7 @@ enum log_level_e {
     LOG_WARN,
     LOG_ERROR,
     LOG_FATAL,
+    LOG_LEVEL_MAX
 };
 
 void log_set_level(enum log_level_e level);

@@ -23,6 +23,7 @@
  */
 #include "leafpy_api.h"
 #include "type.h"
+#include "log.h"
 #include "controller.h"
 #include <stdarg.h>
 
@@ -33,6 +34,9 @@ int leafpy_init(void)
 {
     int ret;
     ret = controller_init();
+    if (ret != 0) {
+        core_printf("[service] controller init failed, ret[%d]\n", ret);
+    }
     return ret;
 }
 
@@ -48,12 +52,20 @@ int leafpy_run_code(const char *code, u32 code_len, char *result, u32 result_len
 {
     int ret;
     ret = controller_run_code(code, code_len, result, result_len);
+    if (ret != 0) {
+        core_printf("[service] controller run code failed, ret[%d]\n", ret);
+    }
     return ret;
 }
 
 int leafpy_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
-    return 0;
+    int ret;
+    ret = controller_run_bytecode(bytecode, bytecode_len, result, result_len);
+    if (ret != 0) {
+        core_printf("[service] controller run bc failed, ret[%d]\n", ret);
+    }
+    return ret;
 }
 
 int leafpy_run_file(const char *filepath, enum leafpy_file_type type, char *result, int result_len)
@@ -74,7 +86,7 @@ int leafpy_compile_bytecode(const char *code, int code_len, char *bytecode, int 
  *****************************************************************************/
 int leafpy_add_core(const char *core_name, u32 core_id)
 {
-    return 0;
+    return controller_add_core(core_id);
 }
 
 int leafpy_deinit_core(u32 core_id)

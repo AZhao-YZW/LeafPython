@@ -31,6 +31,7 @@ extern "C" {
 
 void *mm_malloc(u32 size);
 void mm_free(void *ptr);
+int mm_memset_s(void *dest, u32 dsize, int ch, u32 count);
 
 #ifdef __cplusplus
 }

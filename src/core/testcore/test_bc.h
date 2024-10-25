@@ -59,7 +59,7 @@ typedef struct test_bc_s {
     u32 next_pos;
 } test_bc_s;
 
-void test_bc_proc(test_bc_s *bc);
+int test_bc_proc(test_bc_s *bc);
 
 #ifdef __cplusplus
 }

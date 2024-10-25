@@ -35,11 +35,12 @@ typedef struct {
     struct list_head node;
     u8 core_id;
     u32 size;
-    test_frame_s *frames;
 } test_vm_s;
 
 int test_vm_init(u8 core_id);
-void test_vm_free(u8 core_id);
+int test_vm_free(u8 core_id);
+int test_vm_add(u8 core_id);
+int test_vm_run_frame(u8 core_id, test_frame_s *frame);
 
 #ifdef __cplusplus
 }

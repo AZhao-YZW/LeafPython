@@ -31,9 +31,12 @@ extern "C" {
 #include "test_bc.h"
 
 typedef struct {
-    test_bc_s bc;
+    test_bc_s *bc_list;
+    u32 bc_num;
     u32 idx;
 } test_frame_s;
+
+test_frame_s *test_frame_init(u32 bc_num);
 
 #ifdef __cplusplus
 }

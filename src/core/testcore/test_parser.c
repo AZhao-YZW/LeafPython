@@ -22,6 +22,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_parser.h"
+#include "error.h"
+#include "test_frame.h"
 
 char *g_py_keywords[] = {
     "False", "None", "True",
@@ -45,3 +47,13 @@ char *g_py_delimiters[] = {
     "->", "+=", "-=", "*=", "/=", "//=", "%=",
     "@=", "&=", "|=", "^=", ">>=", "<<=", "**="
 };
+
+int test_parser_code_gen_frame(const char *code, u32 code_len, test_frame_s *frame)
+{
+    return EC_OK;
+}
+
+int test_parser_bc_gen_frame(const char *bytecode, u32 bytecode_len, test_frame_s *frame)
+{
+    return EC_OK;
+}

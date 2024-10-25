@@ -30,7 +30,7 @@ static void base_obj_init(base_obj_s *base_obj)
 
 }
 
-static void global_obj_init(global_obj_s *global_obj)
+static int global_obj_init(global_obj_s *global_obj)
 {
     return EC_OK;
 }
@@ -41,6 +41,6 @@ int test_data_init(void)
     if (global_obj != NULL) {
         return EC_ALLOC_FAILED;
     }
-    global_obj_init(global_obj);
+    (void)global_obj_init(global_obj);
     return EC_OK;
 }

@@ -24,36 +24,91 @@
 #include "test_vm.h"
 #include "error.h"
 #include "list.h"
+#include "log.h"
 #include "mm.h"
 #include "test_frame.h"
+#include "test_bc.h"
 
 struct list_head g_vm_list;
-bool is_vm_first_init = true;
 
 int test_vm_init(u8 core_id)
 {
     test_vm_s *vm = mm_malloc(sizeof(test_vm_s));
     if (vm == NULL) {
+        core_printf("[test_vm] init alloc vm failed, core_id[%d]\n", core_id);
         return EC_ALLOC_FAILED;
     }
     vm->core_id = core_id;
-
-    if (is_vm_first_init) {
-        INIT_LIST_HEAD(&g_vm_list);
-        is_vm_first_init = false;
-    }
+    INIT_LIST_HEAD(&g_vm_list);
     list_add_tail(&vm->node, &g_vm_list);
     return EC_OK;
 }
 
-void test_vm_free(u8 core_id)
+int test_vm_free(u8 core_id)
 {
     test_vm_s *vm = NULL;
     list_for_each_entry(vm, &g_vm_list, node) {
         if (vm->core_id == core_id) {
             list_del(&vm->node);
             mm_free(vm);
-            return;
+            return EC_OK;
         }
     }
+    core_printf("[test_vm] free core_id[%d] not found\n", core_id);
+    return EC_INVALID_CORE_ID;
+}
+
+int test_vm_add(u8 core_id)
+{
+    test_vm_s *vm = NULL;
+    list_for_each_entry(vm, &g_vm_list, node) {
+        if (vm->core_id == core_id) {
+            core_printf("[test_vm] add core_id[%d] failed, already exist\n", core_id);
+            return EC_INVALID_CORE_ID;
+        }
+    }
+    vm = mm_malloc(sizeof(test_vm_s));
+    if (vm == NULL) {
+        core_printf("[test_vm] add core_id[%d] failed, alloc vm failed\n", core_id);
+        return EC_ALLOC_FAILED;
+    }
+    vm->core_id = core_id;
+    list_add_tail(&vm->node, &g_vm_list);
+    return EC_OK;
+}
+
+static int test_vm_run_bc(test_vm_s *vm, test_bc_s *bc)
+{
+    int ret;
+    ret = test_bc_proc(bc);
+    if (ret != EC_OK) {
+        core_printf("[test_vm] run bc failed, ret[%d]\n", ret);
+    }
+    return ret;
+}
+
+static int test_vm_run_bc_list(test_vm_s *vm, test_frame_s *frame)
+{
+    int i, ret;
+    for (i = 0; i < frame->bc_num; i++) {
+        ret = test_vm_run_bc(vm, &frame->bc_list[i]);
+        if (ret != EC_OK) {
+            core_printf("[test_vm] run bc list failed, num[%d] ret[%d]\n", i, ret);
+            return ret;
+        }
+    }
+    return EC_OK;
+}
+
+int test_vm_run_frame(u8 core_id, test_frame_s *frame)
+{
+    int i, ret;
+    test_vm_s *vm = NULL;
+    list_for_each_entry(vm, &g_vm_list, node) {
+        if (vm->core_id == core_id) {
+            return test_vm_run_bc_list(vm, frame);
+        }
+    }
+    core_printf("[test_vm] run frame core_id[%d] not found\n", core_id);
+    return EC_INVALID_CORE_ID;
 }

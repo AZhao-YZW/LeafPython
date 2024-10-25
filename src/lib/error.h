@@ -34,6 +34,7 @@ enum error_code_e {
     EC_UNSUPPORT_OP,
     EC_TIMEOUT,
     EC_UNKNOWN,
+    EC_INVALID_CORE_ID,
     EC_MAX = 0xFFFF
 };
 

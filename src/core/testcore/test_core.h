@@ -29,13 +29,22 @@ extern "C" {
 
 #include "type.h"
 #include "test_data.h"
+#include "test_bc.h"
+
+typedef struct {
+    struct list_head node;
+    u8 core_id;
+} test_core_s;
 
 /* Object Management */
 typedef struct {
     u32 obj_num;
 } obj_mng_s;
 
-int test_core_init(void);
+int test_core_init(u8 core_id);
+int test_core_free(u8 core_id);
+int test_core_add(u8 core_id);
+int test_core_run_bc(u8 core_id, test_bc_s *bc);
 
 #ifdef __cplusplus
 }

@@ -22,6 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_bc.h"
+#include "error.h"
 #include "log.h"
 
 void test_bc_proc_NOP(test_bc_s *bc)
@@ -137,14 +138,15 @@ struct {
     { TEST_BC_FUNC, test_bc_proc_FUNC },
 };
 
-void test_bc_proc(test_bc_s *bc)
+int test_bc_proc(test_bc_s *bc)
 {
     int i;
     for (i = 0; i < ARRAY_SIZE(g_test_bc_map); i++) {
         if (g_test_bc_map[i].op == bc->op) {
             g_test_bc_map[i].proc(bc);
-            return;
+            return EC_OK;
         }
     }
-    log_printf(LOG_ERROR, "unknown op: %d\n", bc->op);
+    log_printf(LOG_ERROR, "unknown op: %u\n", bc->op);
+    return EC_UNSUPPORT_OP;
 }
