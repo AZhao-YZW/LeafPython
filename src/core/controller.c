@@ -49,6 +49,10 @@ int controller_init(void)
 
 int controller_run_code(const char *code, u32 code_len, char *result, u32 result_len)
 {
+    if (code == NULL || code_len == 0 || result == NULL) {
+        return EC_PARAM_INVALID;
+    }
+
     switch (g_cur_core_type) {
 #if (ENABLE_CORE_LEAFPY == 1)
         case CORE_TYPE_LEAFPY:
@@ -65,6 +69,10 @@ int controller_run_code(const char *code, u32 code_len, char *result, u32 result
 
 int controller_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
+    if (bytecode == NULL || bytecode_len == 0 || result == NULL) {
+        return EC_PARAM_INVALID;
+    }
+
     switch (g_cur_core_type) {
 #if (ENABLE_CORE_LEAFPY == 1)
         case CORE_TYPE_LEAFPY:

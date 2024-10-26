@@ -51,42 +51,37 @@ int ctrl_testcore_init(u8 core_id)
 
 int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *result, u32 result_len)
 {
-    if (code == NULL || code_len == 0 || result == NULL) {
-        return EC_PARAM_INVALID;
-    }
-
+    char *line = (char *)code;
+    test_frame_s *frame = NULL;
+    u32 offset = 0, line_len = 0, bc_num;
     int ret;
-    test_frame_s *frame = test_frame_init(1);
-    if (frame == NULL) {
-        core_printf("[ctrl] test_frame init failed\n");
-        return EC_ALLOC_FAILED;
-    }
 
-    ret = test_parser_code_gen_frame(code, code_len, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_parser code gen frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
+    while (offset < code_len) {
+        // code to line
+        line += line_len;
+        offset += line_len;
+        line_len = test_parser_get_line_len(code, code_len, offset);
+        // line to frame
+        bc_num = test_parser_get_frame_bc_num(line, line_len);
+        frame = test_frame_init(bc_num);
+        if (frame == NULL) {
+            core_printf("[ctrl] test_frame init failed\n");
+            return EC_ALLOC_FAILED;
+        }
+        // run frame
+        ret = test_vm_run_frame(core_id, frame);
+        if (ret != EC_OK) {
+            core_printf("[ctrl] test_vm run code frame failed, ret[%d]\n", ret);
+            mm_free(frame->bc_list);
+            mm_free(frame);
+            return ret;
+        }
     }
-
-    ret = test_vm_run_frame(core_id, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_vm run code frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
-
     return EC_OK;
 }
 
 int ctrl_testcore_run_bytecode(u8 core_id, const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
-    if (bytecode == NULL || bytecode_len == 0 || result == NULL) {
-        return EC_PARAM_INVALID;
-    }
-
     int ret;
     test_frame_s *frame = test_frame_init(1);
     if (frame == NULL) {

@@ -48,12 +48,22 @@ char *g_py_delimiters[] = {
     "@=", "&=", "|=", "^=", ">>=", "<<=", "**="
 };
 
-int test_parser_code_gen_frame(const char *code, u32 code_len, test_frame_s *frame)
+int test_parser_bc_gen_frame(const char *bytecode, u32 bytecode_len, test_frame_s *frame)
 {
     return EC_OK;
 }
 
-int test_parser_bc_gen_frame(const char *bytecode, u32 bytecode_len, test_frame_s *frame)
+u32 test_parser_get_frame_bc_num(const char *line, u32 line_len)
+{
+    return 1;
+}
+
+int test_parser_line_to_frame(const char *line, u32 line_len, test_frame_s *frame)
 {
     return EC_OK;
+}
+
+u32 test_parser_get_line_len(const char *code, u32 code_len, u32 offset)
+{
+    return 10;
 }
