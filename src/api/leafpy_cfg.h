@@ -45,9 +45,9 @@ extern "C" {
 #define ENABLE_CORE_TESTCORE        1
 
 /**
- * @brief default core id
+ * @brief leafpython default core id
  */
-#define DEFAULT_CORE_ID             0
+#define LEAFPY_DEFAULT_CORE_ID      0
 
 /**
  * @brief leafpython log level

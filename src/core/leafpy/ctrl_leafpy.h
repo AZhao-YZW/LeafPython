@@ -21,23 +21,18 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _ERROR_H_
-#define _ERROR_H_
+#ifndef _CTRL_LEAFPY_H_
+#define _CTRL_LEAFPY_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-enum error_code_e {
-    EC_OK,
-    EC_PARAM_INVALID,
-    EC_ALLOC_FAILED,
-    EC_UNSUPPORT_OP,
-    EC_TIMEOUT,
-    EC_UNKNOWN,
-    EC_INVALID_CORE_ID,
-    EC_INVALID_CORE_TYPE,
-    EC_MAX = 0xFFFF
-};
+#include "type.h"
+
+int ctrl_leafpy_init(u8 core_id);
+int ctrl_leafpy_run_code(u8 core_id, const char *code, u32 code_len, char *result, u32 result_len);
+int ctrl_leafpy_run_bytecode(u8 core_id, const char *bytecode, u32 bytecode_len, char *result, u32 result_len);
+int ctrl_leafpy_add_core(u8 core_id);
 
 #ifdef __cplusplus
 }

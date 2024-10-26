@@ -22,123 +22,75 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "controller.h"
+#include "ctrl_leafpy.h"
+#include "ctrl_testcore.h"
 #include "leafpy_cfg.h"
 #include "error.h"
 #include "log.h"
-#include "mm.h"
-#include "test_parser.h"
-#include "test_vm.h"
-#include "test_core.h"
-#include "test_frame.h"
+
+u8 g_cur_core_type = LEAFPY_DEFAULT_CORE_TYPE;
+u8 g_cur_core_id = LEAFPY_DEFAULT_CORE_ID;
 
 int controller_init(void)
 {
-    int ret;
-#if (ENABLE_CORE_TESTCORE == 1) && (LEAFPY_DEFAULT_CORE_TYPE == CORE_TYPE_TESTCORE)
-    ret = test_vm_init(DEFAULT_CORE_ID);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_vm init failed, ret[%d]\n", ret);
-        return ret;
-    }
-
-    ret = test_core_init(DEFAULT_CORE_ID);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_core init failed, ret[%d]\n", ret);
-        return ret;
-    }
+    switch (g_cur_core_type) {
+#if (ENABLE_CORE_LEAFPY == 1)
+        case CORE_TYPE_LEAFPY:
+            return ctrl_leafpy_init(g_cur_core_id);
 #endif
-    return EC_OK;
+#if (ENABLE_CORE_TESTCORE == 1)
+        case CORE_TYPE_TESTCORE:
+            return ctrl_testcore_init(g_cur_core_id);
+#endif
+        default:
+            return EC_INVALID_CORE_TYPE;
+    }
 }
 
 int controller_run_code(const char *code, u32 code_len, char *result, u32 result_len)
 {
-    if (code == NULL || code_len == 0 || result == NULL) {
-        return EC_PARAM_INVALID;
-    }
-
-#if (ENABLE_CORE_TESTCORE == 1) && (LEAFPY_DEFAULT_CORE_TYPE == CORE_TYPE_TESTCORE)
-    int ret;
-    test_frame_s *frame = test_frame_init(1);
-    if (frame == NULL) {
-        core_printf("[ctrl] test_frame init failed\n");
-        return EC_ALLOC_FAILED;
-    }
-
-    ret = test_parser_code_gen_frame(code, code_len, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_parser code gen frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
-
-    ret = test_vm_run_frame(DEFAULT_CORE_ID, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_vm run code frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
+    switch (g_cur_core_type) {
+#if (ENABLE_CORE_LEAFPY == 1)
+        case CORE_TYPE_LEAFPY:
+            return ctrl_leafpy_run_code(g_cur_core_id, code, code_len, result, result_len);
 #endif
-
-    return EC_OK;
+#if (ENABLE_CORE_TESTCORE == 1)
+        case CORE_TYPE_TESTCORE:
+            return ctrl_testcore_run_code(g_cur_core_id, code, code_len, result, result_len);
+#endif
+        default:
+            return EC_INVALID_CORE_TYPE;
+    }
 }
 
 int controller_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
-    if (bytecode == NULL || bytecode_len == 0 || result == NULL) {
-        return EC_PARAM_INVALID;
-    }
-
-#if (ENABLE_CORE_TESTCORE == 1) && (LEAFPY_DEFAULT_CORE_TYPE == CORE_TYPE_TESTCORE)
-    int ret;
-    test_frame_s *frame = test_frame_init(1);
-    if (frame == NULL) {
-        core_printf("[ctrl] test_frame init failed\n");
-        return EC_ALLOC_FAILED;
-    }
-
-    ret = test_parser_bc_gen_frame(bytecode, bytecode_len, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_parser bc gen frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
-
-    ret = test_vm_run_frame(DEFAULT_CORE_ID, frame);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_vm run bc frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
+    switch (g_cur_core_type) {
+#if (ENABLE_CORE_LEAFPY == 1)
+        case CORE_TYPE_LEAFPY:
+            return ctrl_leafpy_run_bytecode(g_cur_core_id, bytecode, bytecode_len, result, result_len);
 #endif
-    return EC_OK;
+#if (ENABLE_CORE_TESTCORE == 1)
+        case CORE_TYPE_TESTCORE:
+            return ctrl_testcore_run_bytecode(g_cur_core_id, bytecode, bytecode_len, result, result_len);
+#endif
+        default:
+            return EC_INVALID_CORE_TYPE;
+    }
 }
 
 int controller_add_core(u8 core_id)
 {
-#if (ENABLE_CORE_TESTCORE == 1) && (LEAFPY_DEFAULT_CORE_TYPE == CORE_TYPE_TESTCORE)
-    int ret;
-    ret = test_vm_add(core_id);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_vm add failed, ret[%d]\n", ret);
-        goto error_exit;
-    }
-
-    ret = test_core_add(core_id);
-    if (ret != EC_OK) {
-        core_printf("[ctrl] test_core add failed, ret[%d]\n", ret);
-        goto error_exit;
-    }
-    return EC_OK;
-
-error_exit:
-    if (ret == EC_ALLOC_FAILED) {
-        test_vm_free(core_id);
-        test_vm_free(core_id);
-    }
-    return ret;
+    switch (g_cur_core_type) {
+#if (ENABLE_CORE_LEAFPY == 1)
+        case CORE_TYPE_LEAFPY:
+            return ctrl_leafpy_add_core(core_id);
 #endif
+#if (ENABLE_CORE_TESTCORE == 1)
+        case CORE_TYPE_TESTCORE:
+            return ctrl_testcore_add_core(core_id);
+#endif
+        default:
+            return EC_INVALID_CORE_TYPE;
+    }
 }
