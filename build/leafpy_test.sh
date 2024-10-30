@@ -35,6 +35,15 @@ while [[ $# -gt 0 ]]; do
             fi
             shift
             ;;
+        -t|--testname)
+            test_name="$2"
+            test_path="../test"
+            if [ ! -d $test_path ]; then
+                echo "Test Path [$test_path] not found."
+                exit 1
+            fi
+            shift
+            ;;
         *)
             command="$1"
             ;;
@@ -56,7 +65,13 @@ case $command in
         ./run.sh $demo_path
         ;;
     llt)
-        echo "===== Running LLT: [$demo_name] ====="
+        echo "===== Running LLT: [$test_name] ====="
+        llt_path="$test_path/llt/$test_name"
+        if [ ! -d $llt_path ]; then
+            echo "LLT [$llt_path] not found."
+            exit 1
+        fi
+        ./llt.sh $llt_path
         ;;
     hlt)
         echo "===== Running HLT: [$demo_name] ====="
