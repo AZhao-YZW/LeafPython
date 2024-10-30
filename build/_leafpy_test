@@ -8,7 +8,7 @@ _leafpy_test()
     COMPREPLY=()
     cur="${COMP_WORDS[COMP_CWORD]}"
     prev="${COMP_WORDS[COMP_CWORD-1]}"
-    opts="--help -h --demo -d build run llt hlt benchmark"
+    opts="--help -h --demo -d --testname -t build run llt hlt benchmark"
 
     if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]]; then
         COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )

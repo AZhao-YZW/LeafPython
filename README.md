@@ -1,5 +1,15 @@
 # LeafPython
 
+## Getting Started
+
+### Git clone this repository
+
+```sh
+git clone git@github.com:LeafScript/LeafPython.git
+cd LeafPython
+git submodule update --init --recursive
+```
+
 ## Run Tests
 
 ### Use C++ TestMate extension to run tests
