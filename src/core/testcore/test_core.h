@@ -29,7 +29,23 @@ extern "C" {
 
 #include "type.h"
 #include "test_data.h"
-#include "test_bc.h"
+
+enum test_core_op_e {
+    TEST_CORE_OP_NEW = 0,
+    TEST_CORE_OP_DEL,
+    TEST_CORE_OP_ADD,
+    TEST_CORE_OP_SUB,
+    TEST_CORE_OP_MUL,
+    TEST_CORE_OP_DIV,
+    TEST_CORE_OP_PRINT,
+    TEST_CORE_OP_CALL,
+    TEST_CORE_OP_MAX
+};
+
+typedef struct {
+    u32 arg1;
+    u32 arg2;
+} test_core_input_s;
 
 typedef struct {
     struct list_head node;
@@ -44,7 +60,7 @@ typedef struct {
 int test_core_init(u8 core_id);
 int test_core_free(u8 core_id);
 int test_core_add(u8 core_id);
-int test_core_run_bc(u8 core_id, test_bc_s *bc);
+int test_core_run(u8 core_id, enum test_core_op_e op, test_core_input_s *input);
 
 #ifdef __cplusplus
 }
