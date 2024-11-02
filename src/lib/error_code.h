@@ -42,7 +42,8 @@ enum error_code_e {
     EC_OBJ_ID_INVALID           = 9,
     EC_OBJ_NOT_DELETABLE        = 10,
     EC_OBJ_NOT_FOUND            = 11,
-    EC_OBJ_NAME_LEN_EXCEED      = 12,
+    EC_OBJ_NAME_INVALID         = 12,
+    EC_OBJ_NAME_LEN_EXCEED      = 13,
     EC_MAX                      = 0xFFFF
 };
 

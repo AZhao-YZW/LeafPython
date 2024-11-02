@@ -44,22 +44,35 @@ static obj_base_attr_s *test_data_find_obj_by_id(u32 obj_id, global_obj_s *globa
     return NULL;
 }
 
-static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, global_obj_s *global_obj)
+static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, u32 parent_id,
+                                                   global_obj_s *global_obj)
 {
     obj_base_attr_s *obj_attr = NULL;
 
-    if (!libstr_strcmp(obj_name, global_obj->obj_attr.obj_name)) {
+    if (parent_id == GLOBAL_OBJ_ID && !libstr_strcmp(obj_name, GLOBAL_OBJ_NAME)) {
         log_printf(LOG_DEBUG, "[test_data] find obj_name[%s]\n", obj_name);
         return &global_obj->obj_attr;
     }
     list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
         log_printf(LOG_DEBUG, "[test_data] obj_attr->obj_name[%s]\n", obj_attr->obj_name);
-        if (!libstr_strcmp(obj_name, obj_attr->obj_name)) {
+        if (obj_attr->parent_id == parent_id && !libstr_strcmp(obj_name, obj_attr->obj_name)) {
             log_printf(LOG_DEBUG, "[test_data] find obj_name[%s]\n", obj_name);
             return obj_attr;
         }
     }
     return NULL;
+}
+
+static int test_data_obj_name_check(const char *obj_name, u32 parent_id, global_obj_s *global_obj)
+{
+    obj_base_attr_s *obj_attr = NULL;
+    list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
+        if (obj_attr->parent_id == parent_id && !libstr_strcmp(obj_name, obj_attr->obj_name)) {
+            core_printf("[test_data] obj_name[%s] exist under parent_id[%u]\n", obj_name, parent_id);
+            return EC_OBJ_NAME_INVALID;
+        }
+    }
+    return EC_OK;
 }
 
 static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, bool is_root_mounted)
@@ -115,6 +128,12 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
         return EC_OBJ_NOT_FOUND;
     }
 
+    ret = test_data_obj_name_check(obj_name, parent_id, global_obj);
+    if (ret != EC_OK) {
+        core_printf("[test_data] obj_name is invalid\n");
+        return ret;
+    }
+
     ret = test_data_get_obj_size(obj_type, obj_subtype, &obj_size, global_obj->is_root_mounted);
     if (ret != EC_OK) {
         core_printf("[test_data] get obj_size failed, obj_type[%u] obj_subtype[%u]\n",
@@ -163,9 +182,9 @@ int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
     return EC_OK;
 }
 
-int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_id)
+int test_data_obj_get(const char *obj_name, u32 parent_id, global_obj_s *global_obj, u32 *obj_id)
 {
-    obj_base_attr_s *obj_attr = test_data_find_obj_by_name(obj_name, global_obj);
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_name(obj_name, parent_id, global_obj);
     if (obj_attr == NULL) {
         core_printf("[test_data] find obj_name[%s] failed\n", obj_name);
         return EC_OBJ_NOT_FOUND;
@@ -176,8 +195,8 @@ int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_i
 
 int test_data_init(global_obj_s **global_obj)
 {
-    static char global_obj_name[] = "global_obj";
-    static char root_obj_name[] = "root_obj";
+    static char global_obj_name[] = GLOBAL_OBJ_NAME;
+    static char root_obj_name[] = ROOT_OBJ_NAME;
     obj_base_attr_s *global_obj_attr = NULL;
     int ret;
 

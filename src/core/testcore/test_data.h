@@ -33,8 +33,10 @@ extern "C" {
 
 #define GLOBAL_OBJ_LAYER    0
 #define GLOBAL_OBJ_ID       0
+#define GLOBAL_OBJ_NAME     "global_obj"
 #define ROOT_OBJ_LAYER      1
 #define ROOT_OBJ_ID         1
+#define ROOT_OBJ_NAME       "root_obj"
 
 enum test_data_obj_type_e {
     OBJ_TYPE_GLOBAL,   // global (special)
@@ -84,7 +86,7 @@ typedef struct {
     char *obj_name;
 } obj_base_attr_s;
 
-#define MAX_TEST_DATA_OBJ_ATTR_SIZE 48
+#define MAX_TEST_DATA_OBJ_ATTR_SIZE 40
 #define BUILD_CHECK_OBJ_ATTR_SIZE() BUILD_BUG_ON(sizeof(obj_base_attr_s) > MAX_TEST_DATA_OBJ_ATTR_SIZE)
 
 /* Global Object */
@@ -176,7 +178,7 @@ int test_data_init(global_obj_s **global_obj);
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
                       global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
-int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_id);
+int test_data_obj_get(const char *obj_name, u32 parent_id, global_obj_s *global_obj, u32 *obj_id);
 void test_data_print_obj_list(global_obj_s *global_obj);
 
 #ifdef __cplusplus

@@ -28,28 +28,24 @@ extern "C" {
 #endif
 
 #include "type.h"
-#include "type.h"
 #include "test_data.h"
 
 enum test_core_op_e {
     TEST_CORE_OP_NEW        = 0,
     TEST_CORE_OP_DEL        = 1,
     TEST_CORE_OP_FIND       = 2,
-    TEST_CORE_OP_ADD        = 3,
-    TEST_CORE_OP_SUB        = 4,
-    TEST_CORE_OP_MUL        = 5,
-    TEST_CORE_OP_DIV        = 6,
-    TEST_CORE_OP_PRINT      = 7,
-    TEST_CORE_OP_CALL       = 8,
+    TEST_CORE_OP_CALC       = 3,
+    TEST_CORE_OP_PRINT      = 4,
+    TEST_CORE_OP_CALL       = 5,
     TEST_CORE_OP_MAX        = 0xFF
 };
 
 typedef struct {
-    u8 obj_type;    /* enum test_data_obj_type_e */
+    u8 obj_type;            /* enum test_data_obj_type_e */
     u8 obj_subtype;
     u8 obj_name_len;
     u32 parent_id;
-    char *obj_name;
+    const char *obj_name;   /* obj_name is unique under the same parent_id */
 } test_core_op_NEW;
 
 typedef struct {
@@ -57,6 +53,7 @@ typedef struct {
 } test_core_op_DEL;
 
 typedef struct {
+    u32 parent_id;
     const char *obj_name;
 } test_core_op_FIND;
 
@@ -65,12 +62,17 @@ typedef struct {
 } test_core_res_FIND;
 
 typedef struct {
+    u32 obj_id;
+} test_core_op_CALC;
+
+typedef struct {
     u8 op;          /* enum test_core_op_e */
     u8 rsv[7];
     union {
         test_core_op_NEW op_new;
         test_core_op_DEL op_del;
         test_core_op_FIND op_find;
+        test_core_op_CALC op_calc;
     } info;
     union {
         u64 val;    /* support 8 bytes result data */

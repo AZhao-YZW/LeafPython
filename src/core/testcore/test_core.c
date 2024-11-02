@@ -33,7 +33,7 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_NEW *op_new = &op_info->info.op_new;
     int ret;
-    
+
     if (op_new->obj_name_len > LEAFPY_MAX_OBJ_NAME_LEN) {
         core_printf("[test_core] NEW obj_name_len[%u] exceed limit\n", op_new->obj_name_len);
         return EC_OBJ_NAME_LEN_EXCEED;
@@ -71,7 +71,8 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
     test_core_res_FIND *res_find = &op_info->result.res_find;
     int ret;
 
-    ret = test_data_obj_get(op_find->obj_name, core->global_obj, &res_find->obj_id);
+    ret = test_data_obj_get(op_find->obj_name, op_find->parent_id, core->global_obj,
+                            &res_find->obj_id);
     if (ret != EC_OK) {
         core_printf("[test_core] FIND obj_name[%s] failed\n", op_find->obj_name);
         return ret;
@@ -79,21 +80,7 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
     return EC_OK;
 }
 
-static int test_core_proc_ADD(test_core_op_info_s *op_info, test_core_s *core)
-{
-    return EC_OK;
-}
-static int test_core_proc_SUB(test_core_op_info_s *op_info, test_core_s *core)
-{
-    return EC_OK;
-}
-
-static int test_core_proc_MUL(test_core_op_info_s *op_info, test_core_s *core)
-{
-    return EC_OK;
-}
-
-static int test_core_proc_DIV(test_core_op_info_s *op_info, test_core_s *core)
+static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 {
     return EC_OK;
 }
@@ -115,10 +102,7 @@ struct {
     { TEST_CORE_OP_NEW, test_core_proc_NEW },
     { TEST_CORE_OP_DEL, test_core_proc_DEL },
     { TEST_CORE_OP_FIND, test_core_proc_FIND },
-    { TEST_CORE_OP_ADD, test_core_proc_ADD },
-    { TEST_CORE_OP_SUB, test_core_proc_SUB },
-    { TEST_CORE_OP_MUL, test_core_proc_MUL },
-    { TEST_CORE_OP_DIV, test_core_proc_DIV },
+    { TEST_CORE_OP_CALC, test_core_proc_CALC },
     { TEST_CORE_OP_PRINT, test_core_proc_PRINT },
     { TEST_CORE_OP_CALL, test_core_proc_CALL },
 };
