@@ -62,7 +62,7 @@ static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, global_
     return NULL;
 }
 
-static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size)
+static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, bool is_root_mounted)
 {
     int i;
     static struct {
@@ -71,7 +71,6 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size)
         u8 obj_size;
     } obj_size_map[] = {
         { OBJ_TYPE_OBJECT, NO_OBJ_SUBTYPE,   sizeof(object_obj_s) },
-        { OBJ_TYPE_NUMBER, NUM_TYPE_NUMBER,  sizeof(number_obj_s) },
         { OBJ_TYPE_NUMBER, NUM_TYPE_INT,     sizeof(int_obj_s) },
         { OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT,   sizeof(float_obj_s) },
         { OBJ_TYPE_NUMBER, NUM_TYPE_BOOL,    sizeof(bool_obj_s) },
@@ -92,8 +91,18 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size)
             return EC_OK;
         }
     }
+    /* root_obj is created only once during global_obj initialization */
+    if (CAN_ROOT_MOUNTED(obj_type, is_root_mounted)) {
+        *obj_size = sizeof(root_obj_s);
+        return EC_OK;
+    }
     core_printf("[test_data] obj_type[%d] not supported\n", obj_type);
     return EC_OBJ_TYPE_INVALID;
+}
+
+static int test_data_obj_builtin_func_register(u8 obj_type, u8 obj_subtype, void *obj)
+{
+    return EC_OK;
 }
 
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
@@ -111,7 +120,7 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
         return EC_OBJ_NOT_FOUND;
     }
 
-    ret = test_data_get_obj_size(obj_type, obj_subtype, &obj_size);
+    ret = test_data_get_obj_size(obj_type, obj_subtype, &obj_size, global_obj->is_root_mounted);
     if (ret != EC_OK) {
         core_printf("[test_data] get obj_size failed, obj_type[%u] obj_subtype[%u]\n",
             obj_type, obj_subtype);
@@ -123,6 +132,7 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
         core_printf("[test_data] alloc obj failed, obj_size[%u]\n", obj_size);
         return EC_ALLOC_FAILED;
     }
+    (void)mm_memset_s(obj, obj_size, 0, obj_size);
 
     /* promise obj_base_attr_s is the first member of obj */
     obj_attr = (obj_base_attr_s *)obj;
@@ -139,6 +149,9 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
 
     parent_attr->child_num++;
     global_obj->obj_id_cnt++;
+    if (CAN_ROOT_MOUNTED(obj_type, global_obj->is_root_mounted)) {
+        global_obj->is_root_mounted = true;
+    }
     return ret;
 }
 
@@ -187,6 +200,7 @@ int test_data_init(global_obj_s **global_obj)
         return EC_ALLOC_FAILED;
     }
     (*global_obj)->obj_id_cnt = 1;
+    (*global_obj)->is_root_mounted = false;
     global_obj_attr = &(*global_obj)->obj_attr;
     global_obj_attr->obj_type = OBJ_TYPE_GLOBAL;
     global_obj_attr->free_flag = false;
@@ -198,7 +212,7 @@ int test_data_init(global_obj_s **global_obj)
     INIT_LIST_HEAD(&global_obj_attr->node);
 
     /* new root obj */
-    ret = test_data_obj_new(OBJ_TYPE_OBJECT, NO_OBJ_SUBTYPE, root_obj_name,
+    ret = test_data_obj_new(OBJ_TYPE_ROOT, NO_OBJ_SUBTYPE, root_obj_name,
                             GLOBAL_OBJ_ID, *global_obj);
     if (ret != EC_OK) {
         core_printf("[test_data] new obj failed, ret[%d]\n", ret);

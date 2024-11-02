@@ -38,6 +38,7 @@ extern "C" {
 
 enum test_data_obj_type_e {
     OBJ_TYPE_GLOBAL,   // global (special)
+    OBJ_TYPE_ROOT,     // root (special)
     OBJ_TYPE_OBJECT,   // object
     OBJ_TYPE_NUMBER,   // Number
     OBJ_TYPE_STRING,   // String
@@ -52,7 +53,6 @@ enum test_data_obj_type_e {
 #define NO_OBJ_SUBTYPE  0
 
 enum test_number_type_e {
-    NUM_TYPE_NUMBER,    // Number
     NUM_TYPE_INT,       // int
     NUM_TYPE_FLOAT,     // float
     NUM_TYPE_BOOL,      // bool
@@ -93,16 +93,36 @@ typedef struct {
 typedef struct {
     obj_base_attr_s obj_attr;
     u32 obj_id_cnt;     /* total obj_id count */
+    bool is_root_mounted;
 } global_obj_s;
+
+#define CAN_ROOT_MOUNTED(obj_type, is_mounted) ((obj_type) == OBJ_TYPE_ROOT && !(is_mounted))
 
 /* Root Object */
 typedef struct {
     obj_base_attr_s obj_attr;
+} root_obj_s;
+
+/* Base Object */
+typedef struct _object_obj_s object_obj_s;
+typedef struct _object_obj_s {
+    obj_base_attr_s obj_attr;
+    int (*add)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*eq)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*gt)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*lt)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_and)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_or)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_not)(object_obj_s *obj1);
 } object_obj_s;
 
 /* Number Object */
-typedef struct {
-    obj_base_attr_s obj_attr;
+typedef struct _number_obj_s number_obj_s;
+typedef struct _number_obj_s {
+    object_obj_s obj_obj;
+    int (*sub)(number_obj_s *obj1, number_obj_s *obj2);
+    int (*mul)(number_obj_s *obj1, number_obj_s *obj2);
+    int (*div)(number_obj_s *obj1, number_obj_s *obj2);
 } number_obj_s;
 
 typedef struct {
@@ -124,31 +144,32 @@ typedef struct {
 
 /* String Object */
 typedef struct {
-    obj_base_attr_s obj_attr;
+    object_obj_s obj_obj;
 } string_obj_s;
 
 /* List Object */
 typedef struct {
-    obj_base_attr_s obj_attr;
+    object_obj_s obj_obj;
 } list_obj_s;
 
 /* Tuple Object */
 typedef struct {
-    obj_base_attr_s obj_attr;
+    object_obj_s obj_obj;
 } tuple_obj_s;
 
 /* Set Object */
 typedef struct {
-    obj_base_attr_s obj_attr;
+    object_obj_s obj_obj;
 } set_obj_s;
 
 /* Dict Object */
 typedef struct {
-    obj_base_attr_s obj_attr;
+    object_obj_s obj_obj;
 } dict_obj_s;
 
 typedef union {
     global_obj_s    global_obj;
+    root_obj_s      root_obj;
     object_obj_s    object_obj;
     number_obj_s    number_obj;
     int_obj_s       int_obj;
@@ -162,7 +183,7 @@ typedef union {
     dict_obj_s      dict_obj;
 } test_data_obj_u;
 
-#define MAX_TEST_DATA_OBJ_SIZE 128
+#define MAX_TEST_DATA_OBJ_SIZE 200
 #define BUILD_CHECK_OBJ_SIZE() BUILD_BUG_ON(sizeof(test_data_obj_u) > MAX_TEST_DATA_OBJ_SIZE)
 
 int test_data_init(global_obj_s **global_obj);
