@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_parser.h"
-#include "error.h"
+#include "error_code.h"
 #include "test_frame.h"
 
 char *g_py_keywords[] = {

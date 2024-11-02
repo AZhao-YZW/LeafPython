@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_vm.h"
-#include "error.h"
+#include "error_code.h"
 #include "list.h"
 #include "log.h"
 #include "mm.h"

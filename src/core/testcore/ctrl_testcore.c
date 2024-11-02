@@ -23,7 +23,7 @@
  */
 #include "ctrl_testcore.h"
 #include "leafpy_cfg.h"
-#include "error.h"
+#include "error_code.h"
 #include "log.h"
 #include "mm.h"
 #include "test_parser.h"

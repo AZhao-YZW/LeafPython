@@ -25,7 +25,7 @@
 #include "ctrl_leafpy.h"
 #include "ctrl_testcore.h"
 #include "leafpy_cfg.h"
-#include "error.h"
+#include "error_code.h"
 #include "log.h"
 
 u8 g_cur_core_type = LEAFPY_DEFAULT_CORE_TYPE;

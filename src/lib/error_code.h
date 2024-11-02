@@ -28,15 +28,17 @@ extern "C" {
 #endif
 
 enum error_code_e {
-    EC_OK,
-    EC_PARAM_INVALID,
-    EC_ALLOC_FAILED,
-    EC_UNSUPPORT_OP,
-    EC_TIMEOUT,
-    EC_UNKNOWN,
-    EC_INVALID_CORE_ID,
-    EC_INVALID_CORE_TYPE,
-    EC_MAX = 0xFFFF
+    EC_OK                       = 0,
+    EC_PARAM_INVALID            = 1,
+    EC_ALLOC_FAILED             = 2,
+    EC_UNSUPPORT_OP             = 3,
+    EC_TIMEOUT                  = 4,
+    EC_UNKNOWN                  = 5,
+    EC_INVALID_CORE_ID          = 6,
+    EC_INVALID_CORE_TYPE        = 7,
+    EC_INVALID_OBJ_TYPE         = 8,
+    EC_UNEXIST_OBJ_ID           = 9,
+    EC_MAX                      = 0xFFFF
 };
 
 #ifdef __cplusplus

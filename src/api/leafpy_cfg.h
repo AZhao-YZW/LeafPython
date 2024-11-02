@@ -60,6 +60,16 @@ extern "C" {
 #define LEAFPY_LOG_LEVEL            0
 
 /**
+ * @brief leafpython core log enable
+ * 0: disable
+ * 1: enable
+ */
+#define LEAFPY_CORE_LOG_ENABLE      1
+
+#define LEAFPY_CORE_NAME_LEAFPY     "leafpy"
+#define LEAFPY_CORE_NAME_TESTCORE   "testcore"
+
+/**
  * @brief leafpython use memory mode
  * 0: use static memory
  * 1: use dynamic memory

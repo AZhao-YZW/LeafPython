@@ -44,10 +44,14 @@ typedef unsigned long long u64;
 typedef signed long long s64;
 typedef float f32;
 typedef double f64;
+#ifndef __cplusplus
 typedef u8 bool;
+#endif
 #define true (u8)1
 #define false (u8)0
+#ifndef NULL
 #define NULL ((void *)0)
+#endif
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 #define max(a, b) ((a) > (b) ? (a) : (b))

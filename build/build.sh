@@ -5,4 +5,4 @@ demo_name=$(basename "$1")
 mkdir -p "$output_dir"
 cd "$output_dir" || exit 1
 cmake -G "Unix Makefiles" -D demo_name="$demo_name" ..
-make
+make -j

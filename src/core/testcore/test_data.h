@@ -21,8 +21,8 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _TEST_FRAME_H_
-#define _TEST_FRAME_H_
+#ifndef _TEST_DATA_H_
+#define _TEST_DATA_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,17 +30,19 @@ extern "C" {
 #include "type.h"
 #include "list.h"
 
-#define GLOBAL_OBJ_ID   0
+#define GLOBAL_OBJ_LAYER    0
+#define GLOBAL_OBJ_ID       0
 
-enum test_data_type_e {
-    DATA_TYPE_OBJECT,   // object
-    DATA_TYPE_NUMBER,   // Number
-    DATA_TYPE_STRING,   // String
-    DATA_TYPE_BOOL,     // bool
-    DATA_TYPE_LIST,     // List
-    DATA_TYPE_TUPLE,    // Tuple
-    DATA_TYPE_SET,      // Set
-    DATA_TYPE_DICT,     // Dict
+enum test_data_obj_type_e {
+    OBJ_TYPE_GLOBAL,   // global (special)
+    OBJ_TYPE_OBJECT,   // object
+    OBJ_TYPE_NUMBER,   // Number
+    OBJ_TYPE_STRING,   // String
+    OBJ_TYPE_BOOL,     // bool
+    OBJ_TYPE_LIST,     // List
+    OBJ_TYPE_TUPLE,    // Tuple
+    OBJ_TYPE_SET,      // Set
+    OBJ_TYPE_DICT,     // Dict
 };
 
 enum test_number_type_e {
@@ -58,31 +60,36 @@ enum test_number_type_e {
  *     ...
  */
 
-/* Base Object */
+/**
+ * @brief Object Base Attribute
+ * @note All object has this attribute, and it MUST be 
+ *       the first field of object type struct
+ */
 typedef struct {
-    u8 obj_type : 4;
-    u8 free_flag : 1;   /* 0: using, 1: can be freed */
-    u8 rsv1 : 3;
-    u8 rsv2[3];
-    u32 obj_id;
+    struct list_head node;
+    u8 obj_type;        /* enum test_data_obj_type_e */
+    bool free_flag;     /* false: using, true: can be freed */
+    u8 layer;           /* 0: global, 1: root, >=2: others */
+    u32 obj_id;         /* 0: global, 1: root, >=2: others */
     u32 parent_id;
     u32 child_num;
     char *obj_name;
-} base_obj_s;
+} obj_base_attr_s;
 
 /* Global Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
+    u32 obj_id_cnt;     /* total obj_id count */
 } global_obj_s;
 
 /* Root Object */
 typedef struct {
-    base_obj_s base_obj;
-} root_obj_s;
+    obj_base_attr_s obj_attr;
+} object_obj_s;
 
 /* Number Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } number_obj_s;
 
 typedef struct {
@@ -104,30 +111,32 @@ typedef struct {
 
 /* String Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } string_obj_s;
 
 /* List Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } list_obj_s;
 
 /* Tuple Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } tuple_obj_s;
 
 /* Set Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } set_obj_s;
 
 /* Dict Object */
 typedef struct {
-    base_obj_s base_obj;
+    obj_base_attr_s obj_attr;
 } dict_obj_s;
 
-int test_data_init(void);
+int test_data_init(global_obj_s **global_obj);
+int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *global_obj);
+int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
 
 #ifdef __cplusplus
 }

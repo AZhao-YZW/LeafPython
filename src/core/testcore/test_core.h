@@ -43,24 +43,34 @@ enum test_core_op_e {
 };
 
 typedef struct {
-    u32 arg1;
-    u32 arg2;
-} test_core_input_s;
+    u8 obj_type;    /* enum test_data_obj_type_e */
+    char *obj_name;
+    u32 parent_id;
+} test_core_op_NEW;
+
+typedef struct {
+    u32 obj_id;
+} test_core_op_DEL;
+
+typedef struct {
+    u8 op;          /* enum test_core_op_e */
+    union {
+        test_core_op_NEW op_new;
+        test_core_op_DEL op_del;
+    } info;
+} test_core_op_info_s;
 
 typedef struct {
     struct list_head node;
     u8 core_id;
+    global_obj_s *global_obj;
 } test_core_s;
 
-/* Object Management */
-typedef struct {
-    u32 obj_num;
-} obj_mng_s;
-
+int test_core_run(u8 core_id, test_core_op_info_s *input);
 int test_core_init(u8 core_id);
+test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);
 int test_core_add(u8 core_id);
-int test_core_run(u8 core_id, enum test_core_op_e op, test_core_input_s *input);
 
 #ifdef __cplusplus
 }

@@ -25,7 +25,7 @@
 #include "leafpy_cfg.h"
 #include "type.h"
 #include "log.h"
-#include "error.h"
+#include "error_code.h"
 
 #if (LEAFPY_USE_MEM_MODE == LEAFPY_USE_STATIC_MEM)
 u8 g_static_mem[LEAFPY_MAX_MEM_SIZE] = {0};

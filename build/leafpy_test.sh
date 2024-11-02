@@ -6,6 +6,7 @@ show_help() {
     echo "Options:"
     echo "  -h, --help          Show this help message and exit."
     echo "  -d, --demo <name>   Specify the build demo."
+    echo "  -t, --testname <name>  Specify the test name."
     echo ""
     echo "Commands:"
     echo "  build              Build demo."
@@ -66,12 +67,17 @@ case $command in
         ;;
     llt)
         echo "===== Running LLT: [$test_name] ====="
-        llt_path="$test_path/llt/$test_name"
-        if [ ! -d $llt_path ]; then
-            echo "LLT [$llt_path] not found."
-            exit 1
+        if [ "$test_name" == "all" ]; then
+            llt_path="$test_path/llt"
+            ./llt.sh $llt_path all
+        else
+            llt_path="$test_path/llt/$test_name"
+            if [ ! -d $llt_path ]; then
+                echo "LLT [$llt_path] not found."
+                exit 1
+            fi
+            ./llt.sh $llt_path
         fi
-        ./llt.sh $llt_path
         ;;
     hlt)
         echo "===== Running HLT: [$demo_name] ====="

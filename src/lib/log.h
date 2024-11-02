@@ -37,8 +37,14 @@ enum log_level_e {
 };
 
 void log_set_level(enum log_level_e level);
+/**
+ * @note %llu format is used to print 64bit number, and the parameter 
+ *       MUST be unsigned long long type, otherwise the result will 
+ *       be unpredictable. %lld is similar.
+ */
 void log_printf(enum log_level_e level, const char *fmt, ...);
 void core_printf(const char *fmt, ...);
+void corename_printf(const char *core_name, const char *fmt, ...);
 
 #ifdef __cplusplus
 }

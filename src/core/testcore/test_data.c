@@ -22,25 +22,122 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_data.h"
-#include "error.h"
+#include "error_code.h"
 #include "mm.h"
+#include "log.h"
+#include "list.h"
 
-static void base_obj_init(base_obj_s *base_obj)
+static void test_data_obj_base_attr_init(u32 obj_id, char *obj_name, obj_base_attr_s *parent_attr,
+                                         obj_base_attr_s *obj_attr)
 {
-
+    obj_attr->obj_type = OBJ_TYPE_GLOBAL;
+    obj_attr->free_flag = false;
+    obj_attr->layer = parent_attr->layer + 1;
+    obj_attr->obj_id = obj_id;
+    obj_attr->parent_id = parent_attr->parent_id;
+    obj_attr->child_num = 0;
+    obj_attr->obj_name = obj_name;
+    INIT_LIST_HEAD(&obj_attr->node);
+    list_add_tail(&obj_attr->node, &parent_attr->node);
 }
 
-static int global_obj_init(global_obj_s *global_obj)
+static obj_base_attr_s *test_data_find_obj(u32 obj_id, global_obj_s *global_obj)
 {
+    obj_base_attr_s *obj_attr;
+
+    if (obj_id == GLOBAL_OBJ_ID) {
+        return &global_obj->obj_attr;
+    }
+
+    list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
+        log_printf(LOG_DEBUG, "[test_data] find obj_attr, obj_id[%u]\n", obj_attr->obj_id);
+        if (obj_attr->obj_id == obj_id) {
+            return obj_attr;
+        }
+    }
+    return NULL;
+}
+
+static int test_data_object_obj_new(char *obj_name, obj_base_attr_s *parent_attr, global_obj_s *global_obj)
+{
+    object_obj_s *object_obj = mm_malloc(sizeof(*object_obj));
+    if (object_obj == NULL) {
+        core_printf("[test_data] alloc object_obj failed, parent_id[%u]\n", parent_attr->parent_id);
+        return EC_ALLOC_FAILED;
+    }
+    test_data_obj_base_attr_init(global_obj->obj_id_cnt, obj_name, parent_attr, &object_obj->obj_attr);
     return EC_OK;
 }
 
-int test_data_init(void)
+int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *global_obj)
 {
-    global_obj_s *global_obj = mm_malloc(sizeof(global_obj_s));
-    if (global_obj != NULL) {
+    obj_base_attr_s *parent_attr = NULL;
+    int ret;
+
+    parent_attr = test_data_find_obj(parent_id, global_obj);
+    if (parent_attr == NULL) {
+        core_printf("[test_data] find parent_obj failed, parent_id[%u]\n", parent_id);
+        return EC_UNEXIST_OBJ_ID;
+    }
+
+    switch (obj_type) {
+        case OBJ_TYPE_OBJECT:
+            ret = test_data_object_obj_new(obj_name, parent_attr, global_obj);
+            break;
+        default:
+            core_printf("[test_data] obj_type[%d] not supported\n", obj_type);
+            return EC_INVALID_OBJ_TYPE;
+    }
+    if (ret == EC_OK) {
+        global_obj->obj_id_cnt++;
+    }
+    return ret;
+}
+
+int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
+{
+    obj_base_attr_s *obj_attr = test_data_find_obj(obj_id, global_obj);
+    if (obj_attr == NULL) {
+        core_printf("[test_data] find obj failed, id[%u]\n", obj_id);
+        return EC_UNEXIST_OBJ_ID;
+    }
+
+    list_del(&obj_attr->node);
+    mm_free(obj_attr);
+    return EC_OK;
+}
+
+int test_data_init(global_obj_s **global_obj)
+{
+    obj_base_attr_s *global_obj_attr = NULL;
+    int ret;
+
+    if (*global_obj != NULL) {
+        core_printf("[test_data] global_obj shall be NULL before alloc\n");
+        return EC_PARAM_INVALID;
+    }
+
+    *global_obj = mm_malloc(sizeof(global_obj_s));
+    if (*global_obj == NULL) {
+        core_printf("[test_data] alloc global_obj failed\n");
         return EC_ALLOC_FAILED;
     }
-    (void)global_obj_init(global_obj);
+    (*global_obj)->obj_id_cnt = 1;
+    global_obj_attr = &(*global_obj)->obj_attr;
+    global_obj_attr->obj_type = OBJ_TYPE_GLOBAL;
+    global_obj_attr->free_flag = false;
+    global_obj_attr->layer = GLOBAL_OBJ_LAYER;
+    global_obj_attr->obj_id = GLOBAL_OBJ_ID;
+    global_obj_attr->parent_id = GLOBAL_OBJ_ID;
+    global_obj_attr->child_num = 0;
+    global_obj_attr->obj_name = "global_obj";
+    INIT_LIST_HEAD(&global_obj_attr->node);
+
+    /* new root obj */
+    ret = test_data_obj_new(OBJ_TYPE_OBJECT, "root_obj", GLOBAL_OBJ_ID, *global_obj);
+    if (ret != EC_OK) {
+        core_printf("[test_data] new obj failed, ret[%d]\n", ret);
+        return ret;
+    }
     return EC_OK;
 }

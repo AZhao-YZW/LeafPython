@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "ctrl_leafpy.h"
-#include "error.h"
+#include "error_code.h"
 #include "log.h"
 
 int ctrl_leafpy_init(u8 core_id)

@@ -22,7 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_bc.h"
-#include "error.h"
+#include "error_code.h"
 #include "log.h"
 
 void test_bc_proc_NOP(test_bc_s *bc)

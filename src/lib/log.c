@@ -32,6 +32,8 @@ void printf(const char *fmt, ...) {}
 void vprintf(const char *fmt, va_list ap) {}
 #endif
 
+#if (LEAFPY_CORE_LOG_ENABLE == 1)
+
 u8 g_log_level = LEAFPY_LOG_LEVEL;
 
 void log_set_level(enum log_level_e level)
@@ -56,6 +58,23 @@ void core_printf(const char *fmt, ...)
     va_list ap;
     va_start(ap, fmt);
     printf("[core] ");
-    printf(fmt, ap);
+    vprintf(fmt, ap);
     va_end(ap);
 }
+
+void corename_printf(const char *core_name, const char *fmt, ...)
+{
+    va_list ap;
+    va_start(ap, fmt);
+    printf("[%s] ", core_name);
+    vprintf(fmt, ap);
+    va_end(ap);
+}
+
+#else
+
+void log_set_level(enum log_level_e level) {}
+void log_printf(enum log_level_e level, const char *fmt, ...) {}
+void core_printf(const char *fmt, ...) {}
+
+#endif
