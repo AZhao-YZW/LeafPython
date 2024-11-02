@@ -63,6 +63,20 @@ static int test_core_proc_DEL(test_core_op_info_s *op_info, test_core_s *core)
     return EC_OK;
 }
 
+static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
+{
+    test_core_op_FIND *op_find = &op_info->info.op_find;
+    test_core_res_FIND *res_find = &op_info->result.res_find;
+    int ret;
+
+    ret = test_data_obj_get(op_find->obj_name, core->global_obj, &res_find->obj_id);
+    if (ret != EC_OK) {
+        core_printf("[test_core] FIND obj_name[%s] failed\n", op_find->obj_name);
+        return ret;
+    }
+    return EC_OK;
+}
+
 static int test_core_proc_ADD(test_core_op_info_s *op_info, test_core_s *core)
 {
     return EC_OK;
@@ -98,6 +112,7 @@ struct {
 } g_test_core_op_map[] = {
     { TEST_CORE_OP_NEW, test_core_proc_NEW },
     { TEST_CORE_OP_DEL, test_core_proc_DEL },
+    { TEST_CORE_OP_FIND, test_core_proc_FIND },
     { TEST_CORE_OP_ADD, test_core_proc_ADD },
     { TEST_CORE_OP_SUB, test_core_proc_SUB },
     { TEST_CORE_OP_MUL, test_core_proc_MUL },
@@ -133,7 +148,7 @@ int test_core_run(u8 core_id, test_core_op_info_s *op_info)
         if (core->core_id == core_id) {
             ret = test_core_run_op_proc(op_info, core);
             if (ret != EC_OK) {
-                core_printf("[test_core] run op[%u] failed, core_id[] ret[]\n",
+                core_printf("[test_core] run op[%u] failed, core_id[%u] ret[%d]\n",
                     op_info->op, core_id, ret);
             }
             return ret;
@@ -147,6 +162,9 @@ int test_core_init(u8 core_id)
 {
     int ret;
     test_core_s *core = mm_malloc(sizeof(*core));
+
+    BUILD_CHECK_OP_INFO_SIZE();
+
     if (core == NULL) {
         core_printf("[test_core] init alloc core failed, core_id[%u]\n", core_id);
         return EC_ALLOC_FAILED;
@@ -208,4 +226,10 @@ int test_core_add(u8 core_id)
     core->core_id = core_id;
     list_add_tail(&core->node, &g_core_list);
     return EC_OK;
+}
+
+void test_core_print_obj_list(u8 core_id)
+{
+    test_core_s *core = test_core_get_core(core_id);
+    test_data_print_obj_list(core->global_obj);
 }

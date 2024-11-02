@@ -21,30 +21,15 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _ERROR_H_
-#define _ERROR_H_
+#ifndef _LIBSTR_H_
+#define _LIBSTR_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+#include "type.h"
 
-enum error_code_e {
-    EC_OK                       = 0,
-    EC_PARAM_INVALID            = 1,
-    EC_ALLOC_FAILED             = 2,
-    EC_UNSUPPORT_OP             = 3,
-    EC_TIMEOUT                  = 4,
-    EC_UNKNOWN                  = 5,
-    EC_CORE_ID_INVALID          = 6,
-    EC_CORE_TYPE_INVALID        = 7,
-    EC_OBJ_TYPE_INVALID         = 8,
-    EC_OBJ_ID_INVALID           = 9,
-    EC_OBJ_NOT_DELETABLE        = 10,
-    EC_OBJ_NOT_FOUND            = 11,
-    EC_OBJ_NAME_LEN_EXCEED      = 12,
-    EC_MAX                      = 0xFFFF
-};
+int libstr_strcmp(const char *str1, const char *str2);
 
 #ifdef __cplusplus
 }

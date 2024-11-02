@@ -68,6 +68,9 @@ int leafpy_memset_s(void *dest, u32 dsize, int ch, u32 count)
     (void)memset(dest, ch, count);
     return EC_OK;
 }
+
+#else
+#error "unsupported platform"
 #endif
 
 #endif

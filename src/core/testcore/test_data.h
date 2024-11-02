@@ -139,6 +139,8 @@ typedef struct {
 int test_data_init(global_obj_s **global_obj);
 int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
+int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_id);
+void test_data_print_obj_list(global_obj_s *global_obj);
 
 #ifdef __cplusplus
 }

@@ -28,26 +28,28 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "type.h"
 #include "test_data.h"
 
 enum test_core_op_e {
-    TEST_CORE_OP_NEW = 0,
-    TEST_CORE_OP_DEL,
-    TEST_CORE_OP_FIND,
-    TEST_CORE_OP_ADD,
-    TEST_CORE_OP_SUB,
-    TEST_CORE_OP_MUL,
-    TEST_CORE_OP_DIV,
-    TEST_CORE_OP_PRINT,
-    TEST_CORE_OP_CALL,
-    TEST_CORE_OP_MAX
+    TEST_CORE_OP_NEW        = 0,
+    TEST_CORE_OP_DEL        = 1,
+    TEST_CORE_OP_FIND       = 2,
+    TEST_CORE_OP_ADD        = 3,
+    TEST_CORE_OP_SUB        = 4,
+    TEST_CORE_OP_MUL        = 5,
+    TEST_CORE_OP_DIV        = 6,
+    TEST_CORE_OP_PRINT      = 7,
+    TEST_CORE_OP_CALL       = 8,
+    TEST_CORE_OP_MAX        = 0xFF
 };
 
 typedef struct {
     u8 obj_type;    /* enum test_data_obj_type_e */
-    char *obj_name;
+    u8 rsv;
     u8 obj_name_len;
     u32 parent_id;
+    char *obj_name;
 } test_core_op_NEW;
 
 typedef struct {
@@ -55,12 +57,29 @@ typedef struct {
 } test_core_op_DEL;
 
 typedef struct {
+    const char *obj_name;
+} test_core_op_FIND;
+
+typedef struct {
+    u32 obj_id;
+} test_core_res_FIND;
+
+typedef struct {
     u8 op;          /* enum test_core_op_e */
+    u8 rsv[7];
     union {
         test_core_op_NEW op_new;
         test_core_op_DEL op_del;
+        test_core_op_FIND op_find;
     } info;
+    union {
+        u64 val;    /* support 8 bytes result data */
+        test_core_res_FIND res_find;
+    } result;
 } test_core_op_info_s;
+
+#define MAX_TEST_CORE_OP_INFO_SIZE  32
+#define BUILD_CHECK_OP_INFO_SIZE()  BUILD_BUG_ON(sizeof(test_core_op_info_s) > MAX_TEST_CORE_OP_INFO_SIZE)
 
 typedef struct {
     struct list_head node;
@@ -73,6 +92,7 @@ int test_core_init(u8 core_id);
 test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);
 int test_core_add(u8 core_id);
+void test_core_print_obj_list(u8 core_id);
 
 #ifdef __cplusplus
 }

@@ -26,32 +26,52 @@
 #include "mm.h"
 #include "log.h"
 #include "list.h"
+#include "libstr.h"
 
 static void test_data_obj_base_attr_init(u32 obj_id, char *obj_name, obj_base_attr_s *parent_attr,
                                          obj_base_attr_s *obj_attr)
 {
+    parent_attr->child_num++;
+
     obj_attr->obj_type = OBJ_TYPE_GLOBAL;
     obj_attr->free_flag = false;
     obj_attr->layer = parent_attr->layer + 1;
     obj_attr->obj_id = obj_id;
-    obj_attr->parent_id = parent_attr->parent_id;
+    obj_attr->parent_id = parent_attr->obj_id;
     obj_attr->child_num = 0;
     obj_attr->obj_name = obj_name;
     INIT_LIST_HEAD(&obj_attr->node);
     list_add_tail(&obj_attr->node, &parent_attr->node);
 }
 
-static obj_base_attr_s *test_data_find_obj(u32 obj_id, global_obj_s *global_obj)
+static obj_base_attr_s *test_data_find_obj_by_id(u32 obj_id, global_obj_s *global_obj)
 {
-    obj_base_attr_s *obj_attr;
+    obj_base_attr_s *obj_attr = NULL;
 
     if (obj_id == GLOBAL_OBJ_ID) {
         return &global_obj->obj_attr;
     }
 
     list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
-        log_printf(LOG_DEBUG, "[test_data] find obj_attr, obj_id[%u]\n", obj_attr->obj_id);
         if (obj_attr->obj_id == obj_id) {
+            return obj_attr;
+        }
+    }
+    return NULL;
+}
+
+static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, global_obj_s *global_obj)
+{
+    obj_base_attr_s *obj_attr = NULL;
+
+    if (!libstr_strcmp(obj_name, global_obj->obj_attr.obj_name)) {
+        log_printf(LOG_DEBUG, "[test_data] find obj_name[%s]\n", obj_name);
+        return &global_obj->obj_attr;
+    }
+    list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
+        log_printf(LOG_DEBUG, "[test_data] obj_attr->obj_name[%s]\n", obj_attr->obj_name);
+        if (!libstr_strcmp(obj_name, obj_attr->obj_name)) {
+            log_printf(LOG_DEBUG, "[test_data] find obj_name[%s]\n", obj_name);
             return obj_attr;
         }
     }
@@ -74,10 +94,10 @@ int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *
     obj_base_attr_s *parent_attr = NULL;
     int ret;
 
-    parent_attr = test_data_find_obj(parent_id, global_obj);
+    parent_attr = test_data_find_obj_by_id(parent_id, global_obj);
     if (parent_attr == NULL) {
         core_printf("[test_data] find parent_obj failed, parent_id[%u]\n", parent_id);
-        return EC_OBJ_ID_INVALID;
+        return EC_OBJ_NOT_FOUND;
     }
 
     switch (obj_type) {
@@ -96,14 +116,25 @@ int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *
 
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
 {
-    obj_base_attr_s *obj_attr = test_data_find_obj(obj_id, global_obj);
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, global_obj);
     if (obj_attr == NULL) {
         core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
-        return EC_OBJ_ID_INVALID;
+        return EC_OBJ_NOT_FOUND;
     }
 
     list_del(&obj_attr->node);
     mm_free(obj_attr);
+    return EC_OK;
+}
+
+int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_id)
+{
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_name(obj_name, global_obj);
+    if (obj_attr == NULL) {
+        core_printf("[test_data] find obj_name[%s] failed\n", obj_name);
+        return EC_OBJ_NOT_FOUND;
+    }
+    *obj_id = obj_attr->obj_id;
     return EC_OK;
 }
 
@@ -142,4 +173,16 @@ int test_data_init(global_obj_s **global_obj)
         return ret;
     }
     return EC_OK;
+}
+
+void test_data_print_obj_list(global_obj_s *global_obj)
+{
+    obj_base_attr_s *obj_attr = NULL;
+    core_printf("================================ START ================================\n");
+    list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
+        core_printf("[test_data] obj_id[%u]\t obj_name[%s]\t layer[%u]\t parent_id[%u]\t child_num[%u]\n",
+                    obj_attr->obj_id, obj_attr->obj_name, obj_attr->layer,
+                    obj_attr->parent_id, obj_attr->child_num);
+    }
+    core_printf("================================= END =================================\n");
 }
