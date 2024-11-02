@@ -28,6 +28,7 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "error_code.h"
 #include "list.h"
 
 #define GLOBAL_OBJ_LAYER    0
@@ -45,9 +46,13 @@ enum test_data_obj_type_e {
     OBJ_TYPE_TUPLE,    // Tuple
     OBJ_TYPE_SET,      // Set
     OBJ_TYPE_DICT,     // Dict
+    OBJ_TYPE_MAX,
 };
 
+#define NO_OBJ_SUBTYPE  0
+
 enum test_number_type_e {
+    NUM_TYPE_NUMBER,    // Number
     NUM_TYPE_INT,       // int
     NUM_TYPE_FLOAT,     // float
     NUM_TYPE_BOOL,      // bool
@@ -70,13 +75,19 @@ enum test_number_type_e {
 typedef struct {
     struct list_head node;
     u8 obj_type;        /* enum test_data_obj_type_e */
+    u8 obj_subtype;
     bool free_flag;     /* false: using, true: can be freed */
     u8 layer;           /* 0: global, 1: root, >=2: others */
+    u8 rsv[4];
     u32 obj_id;         /* 0: global, 1: root, >=2: others */
     u32 parent_id;
     u32 child_num;
+    u8 rsv2[4];
     char *obj_name;
 } obj_base_attr_s;
+
+#define MAX_TEST_DATA_OBJ_ATTR_SIZE 48
+#define BUILD_CHECK_OBJ_ATTR_SIZE() BUILD_BUG_ON(sizeof(obj_base_attr_s) > MAX_TEST_DATA_OBJ_ATTR_SIZE)
 
 /* Global Object */
 typedef struct {
@@ -102,14 +113,14 @@ typedef struct {
     number_obj_s num_obj;
 } float_obj_s;
 
-typedef struct {
-    number_obj_s num_obj;
-} complex_obj_s;
-
 /* bool Object */
 typedef struct {
     number_obj_s num_obj;
 } bool_obj_s;
+
+typedef struct {
+    number_obj_s num_obj;
+} complex_obj_s;
 
 /* String Object */
 typedef struct {
@@ -136,8 +147,27 @@ typedef struct {
     obj_base_attr_s obj_attr;
 } dict_obj_s;
 
+typedef union {
+    global_obj_s    global_obj;
+    object_obj_s    object_obj;
+    number_obj_s    number_obj;
+    int_obj_s       int_obj;
+    float_obj_s     float_obj;
+    complex_obj_s   complex_obj;
+    bool_obj_s      bool_obj;
+    string_obj_s    string_obj;
+    list_obj_s      list_obj;
+    tuple_obj_s     tuple_obj;
+    set_obj_s       set_obj;
+    dict_obj_s      dict_obj;
+} test_data_obj_u;
+
+#define MAX_TEST_DATA_OBJ_SIZE 128
+#define BUILD_CHECK_OBJ_SIZE() BUILD_BUG_ON(sizeof(test_data_obj_u) > MAX_TEST_DATA_OBJ_SIZE)
+
 int test_data_init(global_obj_s **global_obj);
-int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *global_obj);
+int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
+                      global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
 int test_data_obj_get(const char *obj_name, global_obj_s *global_obj, u32 *obj_id);
 void test_data_print_obj_list(global_obj_s *global_obj);

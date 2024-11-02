@@ -46,7 +46,7 @@ enum test_core_op_e {
 
 typedef struct {
     u8 obj_type;    /* enum test_data_obj_type_e */
-    u8 rsv;
+    u8 obj_subtype;
     u8 obj_name_len;
     u32 parent_id;
     char *obj_name;

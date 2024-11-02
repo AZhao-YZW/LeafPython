@@ -38,9 +38,11 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
         core_printf("[test_core] NEW obj_name_len[%u] exceed limit\n", op_new->obj_name_len);
         return EC_OBJ_NAME_LEN_EXCEED;
     }
-    ret = test_data_obj_new(op_new->obj_type, op_new->obj_name, op_new->parent_id, core->global_obj);
+    ret = test_data_obj_new(op_new->obj_type, op_new->obj_subtype, op_new->obj_name,
+                            op_new->parent_id, core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] NEW obj_type[%u] failed\n", op_new->obj_type);
+        core_printf("[test_core] NEW [%s] obj_nameobj_type[%u] obj_subtype[%u] failed\n",
+            op_new->obj_name, op_new->obj_type, op_new->obj_subtype);
     }
     return ret;
 }
