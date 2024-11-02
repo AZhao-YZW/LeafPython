@@ -100,11 +100,6 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, boo
     return EC_OBJ_TYPE_INVALID;
 }
 
-static int test_data_obj_builtin_func_register(u8 obj_type, u8 obj_subtype, void *obj)
-{
-    return EC_OK;
-}
-
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
                       global_obj_s *global_obj)
 {

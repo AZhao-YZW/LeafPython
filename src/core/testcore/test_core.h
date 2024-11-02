@@ -87,6 +87,22 @@ typedef struct {
     global_obj_s *global_obj;
 } test_core_s;
 
+typedef struct {
+    int (*eq)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*ne)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*ge)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*gt)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*le)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*lt)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_and)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_or)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*logic_not)(object_obj_s *obj1);
+    int (*add)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*sub)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*mul)(object_obj_s *obj1, object_obj_s *obj2);
+    int (*div)(object_obj_s *obj1, object_obj_s *obj2);
+} test_core_builtin_func_s;
+
 int test_core_run(u8 core_id, test_core_op_info_s *op_info);
 int test_core_init(u8 core_id);
 test_core_s *test_core_get_core(u8 core_id);

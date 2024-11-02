@@ -78,11 +78,9 @@ typedef struct {
     u8 obj_subtype;
     bool free_flag;     /* false: using, true: can be freed */
     u8 layer;           /* 0: global, 1: root, >=2: others */
-    u8 rsv[4];
     u32 obj_id;         /* 0: global, 1: root, >=2: others */
     u32 parent_id;
     u32 child_num;
-    u8 rsv2[4];
     char *obj_name;
 } obj_base_attr_s;
 
@@ -104,25 +102,13 @@ typedef struct {
 } root_obj_s;
 
 /* Base Object */
-typedef struct _object_obj_s object_obj_s;
-typedef struct _object_obj_s {
+typedef struct {
     obj_base_attr_s obj_attr;
-    int (*add)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*eq)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*gt)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*lt)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_and)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_or)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_not)(object_obj_s *obj1);
 } object_obj_s;
 
 /* Number Object */
-typedef struct _number_obj_s number_obj_s;
-typedef struct _number_obj_s {
+typedef struct {
     object_obj_s obj_obj;
-    int (*sub)(number_obj_s *obj1, number_obj_s *obj2);
-    int (*mul)(number_obj_s *obj1, number_obj_s *obj2);
-    int (*div)(number_obj_s *obj1, number_obj_s *obj2);
 } number_obj_s;
 
 typedef struct {
@@ -183,7 +169,7 @@ typedef union {
     dict_obj_s      dict_obj;
 } test_data_obj_u;
 
-#define MAX_TEST_DATA_OBJ_SIZE 200
+#define MAX_TEST_DATA_OBJ_SIZE 128
 #define BUILD_CHECK_OBJ_SIZE() BUILD_BUG_ON(sizeof(test_data_obj_u) > MAX_TEST_DATA_OBJ_SIZE)
 
 int test_data_init(global_obj_s **global_obj);
