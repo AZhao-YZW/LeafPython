@@ -55,7 +55,7 @@ int test_vm_free(u8 core_id)
         }
     }
     core_printf("[test_vm] free core_id[%d] not found\n", core_id);
-    return EC_INVALID_CORE_ID;
+    return EC_CORE_ID_INVALID;
 }
 
 int test_vm_add(u8 core_id)
@@ -64,7 +64,7 @@ int test_vm_add(u8 core_id)
     list_for_each_entry(vm, &g_vm_list, node) {
         if (vm->core_id == core_id) {
             core_printf("[test_vm] add core_id[%d] failed, already exist\n", core_id);
-            return EC_INVALID_CORE_ID;
+            return EC_CORE_ID_INVALID;
         }
     }
     vm = mm_malloc(sizeof(test_vm_s));
@@ -110,5 +110,5 @@ int test_vm_run_frame(u8 core_id, test_frame_s *frame)
         }
     }
     core_printf("[test_vm] run frame core_id[%d] not found\n", core_id);
-    return EC_INVALID_CORE_ID;
+    return EC_CORE_ID_INVALID;
 }

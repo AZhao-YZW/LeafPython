@@ -32,6 +32,8 @@ extern "C" {
 
 #define GLOBAL_OBJ_LAYER    0
 #define GLOBAL_OBJ_ID       0
+#define ROOT_OBJ_LAYER      1
+#define ROOT_OBJ_ID         1
 
 enum test_data_obj_type_e {
     OBJ_TYPE_GLOBAL,   // global (special)

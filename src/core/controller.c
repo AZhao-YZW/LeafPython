@@ -43,7 +43,7 @@ int controller_init(void)
             return ctrl_testcore_init(g_cur_core_id);
 #endif
         default:
-            return EC_INVALID_CORE_TYPE;
+            return EC_CORE_TYPE_INVALID;
     }
 }
 
@@ -63,7 +63,7 @@ int controller_run_code(const char *code, u32 code_len, char *result, u32 result
             return ctrl_testcore_run_code(g_cur_core_id, code, code_len, result, result_len);
 #endif
         default:
-            return EC_INVALID_CORE_TYPE;
+            return EC_CORE_TYPE_INVALID;
     }
 }
 
@@ -83,7 +83,7 @@ int controller_run_bytecode(const char *bytecode, u32 bytecode_len, char *result
             return ctrl_testcore_run_bytecode(g_cur_core_id, bytecode, bytecode_len, result, result_len);
 #endif
         default:
-            return EC_INVALID_CORE_TYPE;
+            return EC_CORE_TYPE_INVALID;
     }
 }
 
@@ -99,6 +99,6 @@ int controller_add_core(u8 core_id)
             return ctrl_testcore_add_core(core_id);
 #endif
         default:
-            return EC_INVALID_CORE_TYPE;
+            return EC_CORE_TYPE_INVALID;
     }
 }

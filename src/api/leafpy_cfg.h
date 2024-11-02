@@ -69,6 +69,8 @@ extern "C" {
 #define LEAFPY_CORE_NAME_LEAFPY     "leafpy"
 #define LEAFPY_CORE_NAME_TESTCORE   "testcore"
 
+#define LEAFPY_MAX_OBJ_NAME_LEN     128
+
 /**
  * @brief leafpython use memory mode
  * 0: use static memory

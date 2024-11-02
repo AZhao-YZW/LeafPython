@@ -33,6 +33,7 @@ extern "C" {
 enum test_core_op_e {
     TEST_CORE_OP_NEW = 0,
     TEST_CORE_OP_DEL,
+    TEST_CORE_OP_FIND,
     TEST_CORE_OP_ADD,
     TEST_CORE_OP_SUB,
     TEST_CORE_OP_MUL,
@@ -45,6 +46,7 @@ enum test_core_op_e {
 typedef struct {
     u8 obj_type;    /* enum test_data_obj_type_e */
     char *obj_name;
+    u8 obj_name_len;
     u32 parent_id;
 } test_core_op_NEW;
 
@@ -66,7 +68,7 @@ typedef struct {
     global_obj_s *global_obj;
 } test_core_s;
 
-int test_core_run(u8 core_id, test_core_op_info_s *input);
+int test_core_run(u8 core_id, test_core_op_info_s *op_info);
 int test_core_init(u8 core_id);
 test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);

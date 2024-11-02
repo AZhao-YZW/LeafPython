@@ -77,7 +77,7 @@ int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *
     parent_attr = test_data_find_obj(parent_id, global_obj);
     if (parent_attr == NULL) {
         core_printf("[test_data] find parent_obj failed, parent_id[%u]\n", parent_id);
-        return EC_UNEXIST_OBJ_ID;
+        return EC_OBJ_ID_INVALID;
     }
 
     switch (obj_type) {
@@ -86,7 +86,7 @@ int test_data_obj_new(u8 obj_type, char *obj_name, u32 parent_id, global_obj_s *
             break;
         default:
             core_printf("[test_data] obj_type[%d] not supported\n", obj_type);
-            return EC_INVALID_OBJ_TYPE;
+            return EC_OBJ_TYPE_INVALID;
     }
     if (ret == EC_OK) {
         global_obj->obj_id_cnt++;
@@ -98,8 +98,8 @@ int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
 {
     obj_base_attr_s *obj_attr = test_data_find_obj(obj_id, global_obj);
     if (obj_attr == NULL) {
-        core_printf("[test_data] find obj failed, id[%u]\n", obj_id);
-        return EC_UNEXIST_OBJ_ID;
+        core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
+        return EC_OBJ_ID_INVALID;
     }
 
     list_del(&obj_attr->node);
@@ -109,6 +109,8 @@ int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
 
 int test_data_init(global_obj_s **global_obj)
 {
+    static char global_obj_name[] = "global_obj";
+    static char root_obj_name[] = "root_obj";
     obj_base_attr_s *global_obj_attr = NULL;
     int ret;
 
@@ -130,11 +132,11 @@ int test_data_init(global_obj_s **global_obj)
     global_obj_attr->obj_id = GLOBAL_OBJ_ID;
     global_obj_attr->parent_id = GLOBAL_OBJ_ID;
     global_obj_attr->child_num = 0;
-    global_obj_attr->obj_name = "global_obj";
+    global_obj_attr->obj_name = global_obj_name;
     INIT_LIST_HEAD(&global_obj_attr->node);
 
     /* new root obj */
-    ret = test_data_obj_new(OBJ_TYPE_OBJECT, "root_obj", GLOBAL_OBJ_ID, *global_obj);
+    ret = test_data_obj_new(OBJ_TYPE_OBJECT, root_obj_name, GLOBAL_OBJ_ID, *global_obj);
     if (ret != EC_OK) {
         core_printf("[test_data] new obj failed, ret[%d]\n", ret);
         return ret;

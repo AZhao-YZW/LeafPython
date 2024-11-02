@@ -34,10 +34,12 @@ enum error_code_e {
     EC_UNSUPPORT_OP             = 3,
     EC_TIMEOUT                  = 4,
     EC_UNKNOWN                  = 5,
-    EC_INVALID_CORE_ID          = 6,
-    EC_INVALID_CORE_TYPE        = 7,
-    EC_INVALID_OBJ_TYPE         = 8,
-    EC_UNEXIST_OBJ_ID           = 9,
+    EC_CORE_ID_INVALID          = 6,
+    EC_CORE_TYPE_INVALID        = 7,
+    EC_OBJ_TYPE_INVALID         = 8,
+    EC_OBJ_ID_INVALID           = 9,
+    EC_OBJ_NOT_DELETABLE        = 10,
+    EC_OBJ_NAME_LEN_EXCEED      = 11,
     EC_MAX                      = 0xFFFF
 };
 

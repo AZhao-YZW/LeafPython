@@ -22,6 +22,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 #include "test_core.h"
+#include "leafpy_cfg.h"
 #include "error_code.h"
 #include "list.h"
 #include "mm.h"
@@ -32,6 +33,11 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_NEW *op_new = &op_info->info.op_new;
     int ret;
+    
+    if (op_new->obj_name_len > LEAFPY_MAX_OBJ_NAME_LEN) {
+        core_printf("[test_core] NEW obj_name_len[%u] exceed limit\n", op_new->obj_name_len);
+        return EC_OBJ_NAME_LEN_EXCEED;
+    }
     ret = test_data_obj_new(op_new->obj_type, op_new->obj_name, op_new->parent_id, core->global_obj);
     if (ret != EC_OK) {
         core_printf("[test_core] NEW obj_type[%u] failed\n", op_new->obj_type);
@@ -43,9 +49,16 @@ static int test_core_proc_DEL(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_DEL *op_del = &op_info->info.op_del;
     int ret;
+
+    if (op_del->obj_id == GLOBAL_OBJ_ID || op_del->obj_id == ROOT_OBJ_ID) {
+        core_printf("[test_core] DEL obj_id[%u] failed, global_obj and root_obj is not deletable\n",
+            op_del->obj_id);
+        return EC_OBJ_NOT_DELETABLE;
+    }
     ret = test_data_obj_del(op_del->obj_id, core->global_obj);
     if (ret != EC_OK) {
         core_printf("[test_core] DEL obj_id[%u] failed\n", op_del->obj_id);
+        return ret;
     }
     return EC_OK;
 }
@@ -93,7 +106,7 @@ struct {
     { TEST_CORE_OP_CALL, test_core_proc_CALL },
 };
 
-int test_core_run_op_proc(test_core_op_info_s *op_info, test_core_s *core)
+static int test_core_run_op_proc(test_core_op_info_s *op_info, test_core_s *core)
 {
     int i;
     for (i = 0; i < ARRAY_SIZE(g_test_core_op_map); i++) {
@@ -110,13 +123,24 @@ static struct list_head g_core_list;
 int test_core_run(u8 core_id, test_core_op_info_s *op_info)
 {
     test_core_s *core = NULL;
+    int ret;
+
+    if (op_info == NULL) {
+        core_printf("[test_core] run op_info is NULL\n");
+        return EC_PARAM_INVALID;
+    }
     list_for_each_entry(core, &g_core_list, node) {
         if (core->core_id == core_id) {
-            return test_core_run_op_proc(op_info, core);
+            ret = test_core_run_op_proc(op_info, core);
+            if (ret != EC_OK) {
+                core_printf("[test_core] run op[%u] failed, core_id[] ret[]\n",
+                    op_info->op, core_id, ret);
+            }
+            return ret;
         }
     }
     core_printf("[test_core] core_id[%u] invalid, run op[%u] failed\n", core_id);
-    return EC_INVALID_CORE_ID;
+    return EC_CORE_ID_INVALID;
 }
 
 int test_core_init(u8 core_id)
@@ -164,7 +188,7 @@ int test_core_free(u8 core_id)
         }
     }
     core_printf("[test_core] free core failed, core_id[%u] not exist\n", core_id);
-    return EC_INVALID_CORE_ID;
+    return EC_CORE_ID_INVALID;
 }
 
 int test_core_add(u8 core_id)
@@ -173,7 +197,7 @@ int test_core_add(u8 core_id)
     list_for_each_entry(core, &g_core_list, node) {
         if (core->core_id == core_id) {
             core_printf("[test_core] core_id[%u] already exist\n", core_id);
-            return EC_INVALID_CORE_ID;
+            return EC_CORE_ID_INVALID;
         }
     }
     core = mm_malloc(sizeof(test_core_s));
