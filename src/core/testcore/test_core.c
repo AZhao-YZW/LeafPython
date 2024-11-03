@@ -208,6 +208,11 @@ int test_core_run(u8 core_id, test_core_op_info_s *op_info)
     return EC_CORE_ID_INVALID;
 }
 
+static int test_core_builtin_func_init(builtin_func_s *builtin_func)
+{
+    return EC_OK;
+}
+
 int test_core_init(u8 core_id)
 {
     int ret;
@@ -221,6 +226,7 @@ int test_core_init(u8 core_id)
     }
     (void)mm_memset_s(core, sizeof(*core), 0, sizeof(*core));
     core->core_id = core_id;
+
     ret = test_data_init(&core->global_obj);
     if (ret != EC_OK) {
         core_printf("[test_core] init global_obj failed, core_id[%u]\n", core->core_id);
@@ -228,8 +234,21 @@ int test_core_init(u8 core_id)
         return ret;
     }
 
+    ret = test_core_builtin_func_init(core->builtin_func);
+    if (ret != EC_OK) {
+        core_printf("[test_core] init builtin_func failed, core_id[%u]\n", core->core_id);
+        test_data_free(&core->global_obj);
+        mm_free(core);
+        return ret;
+    }
+
     INIT_LIST_HEAD(&g_core_list);
     list_add_tail(&core->node, &g_core_list);
+    return EC_OK;
+}
+
+int test_core_register_cfunc(register_cfunc_s *reg_cfunc)
+{
     return EC_OK;
 }
 

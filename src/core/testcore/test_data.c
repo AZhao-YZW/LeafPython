@@ -382,6 +382,11 @@ int test_data_init(global_obj_s **global_obj)
     return EC_OK;
 }
 
+int test_data_free(global_obj_s **global_obj)
+{
+    return EC_OK;
+}
+
 void test_data_print_obj_list(global_obj_s *global_obj)
 {
     obj_base_attr_s *obj_attr = NULL;

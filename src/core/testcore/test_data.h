@@ -228,6 +228,7 @@ typedef struct {
 } test_data_obj_op_info_s;
 
 int test_data_init(global_obj_s **global_obj);
+int test_data_free(global_obj_s **global_obj);
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
                       global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);

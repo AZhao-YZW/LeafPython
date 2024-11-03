@@ -38,7 +38,8 @@ enum test_core_op_e {
     TEST_CORE_OP_GET        = 4,
     TEST_CORE_OP_CALC       = 5,
     TEST_CORE_OP_PRINT      = 6,
-    TEST_CORE_OP_CALL       = 7,
+    TEST_CORE_OP_REG        = 7,
+    TEST_CORE_OP_CALL       = 8,
     TEST_CORE_OP_MAX        = 0xFF
 };
 
@@ -122,29 +123,36 @@ typedef struct {
 #define BUILD_CHECK_OP_INFO_SIZE()  BUILD_BUG_ON(sizeof(test_core_op_info_s) > MAX_TEST_CORE_OP_INFO_SIZE)
 
 typedef struct {
+    int (*eq)(u8 obj1_id, u8 obj2_id);
+    int (*ne)(u8 obj1_id, u8 obj2_id);
+    int (*ge)(u8 obj1_id, u8 obj2_id);
+    int (*gt)(u8 obj1_id, u8 obj2_id);
+    int (*le)(u8 obj1_id, u8 obj2_id);
+    int (*lt)(u8 obj1_id, u8 obj2_id);
+    int (*logic_and)(u8 obj1_id, u8 obj2_id);
+    int (*logic_or)(u8 obj1_id, u8 obj2_id);
+    int (*logic_not)(u8 obj_id);
+    int (*add)(u8 obj1_id, u8 obj2_id);
+    int (*sub)(u8 obj1_id, u8 obj2_id);
+    int (*mul)(u8 obj1_id, u8 obj2_id);
+    int (*div)(u8 obj1_id, u8 obj2_id);
+} builtin_func_s;
+
+typedef struct {
+    int mock;
+} register_cfunc_s;
+
+typedef struct {
     struct list_head node;
     u8 core_id;
     global_obj_s *global_obj;
+    builtin_func_s *builtin_func;
+    register_cfunc_s *reg_cfunc;
 } test_core_s;
-
-typedef struct {
-    int (*eq)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*ne)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*ge)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*gt)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*le)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*lt)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_and)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_or)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*logic_not)(object_obj_s *obj1);
-    int (*add)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*sub)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*mul)(object_obj_s *obj1, object_obj_s *obj2);
-    int (*div)(object_obj_s *obj1, object_obj_s *obj2);
-} test_core_builtin_func_s;
 
 int test_core_run(u8 core_id, test_core_op_info_s *op_info);
 int test_core_init(u8 core_id);
+int test_core_register_cfunc(register_cfunc_s *reg_cfunc);
 test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);
 int test_core_add(u8 core_id);
