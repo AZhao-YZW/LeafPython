@@ -29,8 +29,6 @@ extern "C" {
 
 #include "type.h"
 
-#define typeof __typeof__
-
 struct list_head {
     struct list_head *next, *prev;
 };
@@ -41,10 +39,6 @@ static inline void INIT_LIST_HEAD(struct list_head *list) {
     list->next = list;
     list->prev = list;
 }
-
-#ifndef offsetof
-#define offsetof(type, member) __builtin_offsetof(type, member)
-#endif
 
 /**
  * container_of - cast a member of a structure out to the containing structure

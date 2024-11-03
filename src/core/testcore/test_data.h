@@ -54,12 +54,39 @@ enum test_data_obj_type_e {
 
 #define NO_OBJ_SUBTYPE  0
 
-enum test_number_type_e {
+enum test_data_number_type_e {
     NUM_TYPE_INT,       // int
     NUM_TYPE_FLOAT,     // float
     NUM_TYPE_BOOL,      // bool
     NUM_TYPE_COMPLEX,   // complex
 };
+
+#define OBJ_UNION_TYPE(t, st) ((u16)(t) << 8 | (u16)(st))
+#define OBJ_UNION_TYPE_SIMPLE(t, st) OBJ_UNION_TYPE(OBJ_TYPE_##t, st)
+#define OBJ_UNION_2_TYPE(t1, st1, t2, st2) (((u32)(t1) << 24 | (u32)(st1) << 16 | (u32)(t2) << 8 | (u32)(st2)))
+#define OBJ_UNION_2_TYPE_SIMPLE(t1, st1, t2, st2) \
+    OBJ_UNION_2_TYPE(OBJ_TYPE_##t1, st1, OBJ_TYPE_##t2, st2)
+
+typedef struct {
+    u16 obj_union_type;
+    void (*set_obj_val)(void *obj, void *val);
+    void (*get_obj_val)(void *val, void *obj);
+} test_data_type_op_s;
+
+#define DEFINE_SET_OBJ_VAL_FUNC(t, st, val_offset, val_type) \
+static inline void set_obj_val_##t##_##st(void *obj, void *val) \
+{ \
+    *(val_type *)((u8 *)obj + (val_offset)) = *(val_type *)val; \
+}
+
+#define DEFINE_GET_OBJ_VAL_FUNC(t, st, val_offset, val_type) \
+static inline void get_obj_val_##t##_##st(void *val, void *obj) \
+{ \
+    *(val_type *)val = *(val_type *)((u8 *)obj + (val_offset)); \
+}
+
+#define TEST_DATA_TYPE_OP_ELEMENT(t, st) \
+    { OBJ_UNION_TYPE(t, st), set_obj_val_##t##_##st, get_obj_val_##t##_##st }
 
 /**
  * Global Object
@@ -115,15 +142,18 @@ typedef struct {
 
 typedef struct {
     number_obj_s num_obj;
+    s64 val;
 } int_obj_s;
 
 typedef struct {
     number_obj_s num_obj;
+    f64 val;
 } float_obj_s;
 
 /* bool Object */
 typedef struct {
     number_obj_s num_obj;
+    u8 val;
 } bool_obj_s;
 
 typedef struct {
@@ -133,6 +163,7 @@ typedef struct {
 /* String Object */
 typedef struct {
     object_obj_s obj_obj;
+    char *val;
 } string_obj_s;
 
 /* List Object */
@@ -174,11 +205,37 @@ typedef union {
 #define MAX_TEST_DATA_OBJ_SIZE 128
 #define BUILD_CHECK_OBJ_SIZE() BUILD_BUG_ON(sizeof(test_data_obj_u) > MAX_TEST_DATA_OBJ_SIZE)
 
+/*****************************************************************************
+ *                          Interface of test_data
+ *****************************************************************************/
+enum test_data_type_op_e {
+    TYPE_OP_SET_OBJ_VAL,
+    TYPE_OP_GET_OBJ_VAL,
+    TYPE_OP_MAX
+};
+
+typedef struct {
+    u8 op;          /* enum test_data_type_op_e */
+    u8 obj_id;
+    u8 obj_type;
+    u8 obj_subtype;
+    global_obj_s *global_obj;
+    union {
+        struct {
+            void *val;
+        } set_get_obj_val;
+    } param;
+} test_data_obj_op_info_s;
+
 int test_data_init(global_obj_s **global_obj);
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
                       global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
-int test_data_obj_get(const char *obj_name, u32 parent_id, global_obj_s *global_obj, u32 *obj_id);
+int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj_s *global_obj,
+                                 u32 *obj_id);
+int test_data_obj_op_proc(test_data_obj_op_info_s *info);
+int test_data_obj_add(u32 obj1_id, u32 obj2_id, u32 val_len, global_obj_s *global_obj, void *obj_val);
+
 void test_data_print_obj_list(global_obj_s *global_obj);
 
 #ifdef __cplusplus

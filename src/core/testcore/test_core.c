@@ -41,8 +41,8 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
     ret = test_data_obj_new(op_new->obj_type, op_new->obj_subtype, op_new->obj_name,
                             op_new->parent_id, core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] NEW [%s] obj_nameobj_type[%u] obj_subtype[%u] failed\n",
-            op_new->obj_name, op_new->obj_type, op_new->obj_subtype);
+        core_printf("[test_core] NEW obj_name[%s] obj_type[%u] obj_subtype[%u] failed, ret[%d]\n",
+            op_new->obj_name, op_new->obj_type, op_new->obj_subtype, ret);
     }
     return ret;
 }
@@ -53,13 +53,13 @@ static int test_core_proc_DEL(test_core_op_info_s *op_info, test_core_s *core)
     int ret;
 
     if (op_del->obj_id == GLOBAL_OBJ_ID || op_del->obj_id == ROOT_OBJ_ID) {
-        core_printf("[test_core] DEL obj_id[%u] failed, global_obj and root_obj is not deletable\n",
+        core_printf("[test_core] DEL obj_id[%u] failed, global_obj or root_obj is not deletable\n",
             op_del->obj_id);
         return EC_OBJ_NOT_DELETABLE;
     }
     ret = test_data_obj_del(op_del->obj_id, core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] DEL obj_id[%u] failed\n", op_del->obj_id);
+        core_printf("[test_core] DEL obj_id[%u] failed, ret[%d]\n", op_del->obj_id, ret);
         return ret;
     }
     return EC_OK;
@@ -71,10 +71,51 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
     test_core_res_FIND *res_find = &op_info->result.res_find;
     int ret;
 
-    ret = test_data_obj_get(op_find->obj_name, op_find->parent_id, core->global_obj,
-                            &res_find->obj_id);
+    ret = test_data_obj_get_id_by_name(op_find->obj_name, op_find->parent_id, core->global_obj,
+                                       &res_find->obj_id);
     if (ret != EC_OK) {
-        core_printf("[test_core] FIND obj_name[%s] failed\n", op_find->obj_name);
+        core_printf("[test_core] FIND obj_name[%s] failed, ret[%d]\n", op_find->obj_name, ret);
+        return ret;
+    }
+    return EC_OK;
+}
+
+static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
+{
+    test_core_op_SET *op_set = &op_info->info.op_set;
+    test_data_obj_op_info_s info = {
+        .op = TYPE_OP_SET_OBJ_VAL,
+        .obj_id = op_set->obj_id,
+        .obj_type = op_set->obj_type,
+        .obj_subtype = op_set->obj_subtype,
+        .global_obj = core->global_obj,
+        .param = {.set_get_obj_val = {.val = op_set->obj_val}}
+    };
+    int ret;
+    ret = test_data_obj_op_proc(&info);
+    if (ret != EC_OK) {
+        core_printf("[test_core] SET obj_id[%u] failed, ret[%d]\n", op_set->obj_id, ret);
+        return ret;
+    }
+    return EC_OK;
+}
+
+static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
+{
+    test_core_op_GET *op_get = &op_info->info.op_get;
+    test_core_res_GET *res_get = &op_info->result.res_get;
+    test_data_obj_op_info_s info = {
+        .op = TYPE_OP_GET_OBJ_VAL,
+        .obj_id = op_get->obj_id,
+        .obj_type = op_get->obj_type,
+        .obj_subtype = op_get->obj_subtype,
+        .global_obj = core->global_obj,
+        .param = {.set_get_obj_val = {.val = res_get->obj_val}}
+    };
+    int ret;
+    ret = test_data_obj_op_proc(&info);
+    if (ret != EC_OK) {
+        core_printf("[test_core] GET obj_id[%u] failed, ret[%d]\n", op_get->obj_id, ret);
         return ret;
     }
     return EC_OK;
@@ -82,6 +123,27 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
 
 static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 {
+    test_core_op_CALC *op_calc = &op_info->info.op_calc;
+    test_core_res_CALC *res_calc = &op_info->result.res_calc;
+    int ret;
+
+    switch (op_calc->op) {
+        case CALC_OP_ADD:
+            ret = test_data_obj_add(op_calc->obj1_id, op_calc->obj2_id, op_calc->val_len,
+                                    core->global_obj, res_calc->obj_val);
+            break;
+        case CALC_OP_SUB:
+        case CALC_OP_MUL:
+        case CALC_OP_DIV:
+        default:
+            core_printf("[test_core] CALC unsupport op[%d]\n", op_calc->op);
+            return EC_UNSUPPORT_OP;
+    }
+    if (ret != EC_OK) {
+        core_printf("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
+            op_calc->op, op_calc->obj1_id, op_calc->obj2_id, ret);
+        return ret;
+    }
     return EC_OK;
 }
 
@@ -102,6 +164,8 @@ struct {
     { TEST_CORE_OP_NEW, test_core_proc_NEW },
     { TEST_CORE_OP_DEL, test_core_proc_DEL },
     { TEST_CORE_OP_FIND, test_core_proc_FIND },
+    { TEST_CORE_OP_SET, test_core_proc_SET },
+    { TEST_CORE_OP_GET, test_core_proc_GET },
     { TEST_CORE_OP_CALC, test_core_proc_CALC },
     { TEST_CORE_OP_PRINT, test_core_proc_PRINT },
     { TEST_CORE_OP_CALL, test_core_proc_CALL },

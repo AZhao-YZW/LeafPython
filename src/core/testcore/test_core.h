@@ -34,9 +34,11 @@ enum test_core_op_e {
     TEST_CORE_OP_NEW        = 0,
     TEST_CORE_OP_DEL        = 1,
     TEST_CORE_OP_FIND       = 2,
-    TEST_CORE_OP_CALC       = 3,
-    TEST_CORE_OP_PRINT      = 4,
-    TEST_CORE_OP_CALL       = 5,
+    TEST_CORE_OP_SET        = 3,
+    TEST_CORE_OP_GET        = 4,
+    TEST_CORE_OP_CALC       = 5,
+    TEST_CORE_OP_PRINT      = 6,
+    TEST_CORE_OP_CALL       = 7,
     TEST_CORE_OP_MAX        = 0xFF
 };
 
@@ -53,6 +55,23 @@ typedef struct {
 } test_core_op_DEL;
 
 typedef struct {
+    u8 obj_type;
+    u8 obj_subtype;
+    u32 obj_id;
+    void *obj_val;
+} test_core_op_SET;
+
+typedef struct {
+    u8 obj_type;
+    u8 obj_subtype;
+    u32 obj_id;
+} test_core_op_GET;
+
+typedef struct {
+    void *obj_val;
+} test_core_res_GET;
+
+typedef struct {
     u32 parent_id;
     const char *obj_name;
 } test_core_op_FIND;
@@ -61,9 +80,24 @@ typedef struct {
     u32 obj_id;
 } test_core_res_FIND;
 
+enum test_core_calc_op_e {
+    CALC_OP_ADD,
+    CALC_OP_SUB,
+    CALC_OP_MUL,
+    CALC_OP_DIV,
+    CALC_OP_MAX
+};
+
 typedef struct {
-    u32 obj_id;
+    u8 op;
+    u32 obj1_id;
+    u32 obj2_id;
+    u32 val_len;
 } test_core_op_CALC;
+
+typedef struct {
+    void *obj_val;
+} test_core_res_CALC;
 
 typedef struct {
     u8 op;          /* enum test_core_op_e */
@@ -71,12 +105,16 @@ typedef struct {
     union {
         test_core_op_NEW op_new;
         test_core_op_DEL op_del;
+        test_core_op_SET op_set;
+        test_core_op_GET op_get;
         test_core_op_FIND op_find;
         test_core_op_CALC op_calc;
     } info;
     union {
         u64 val;    /* support 8 bytes result data */
+        test_core_res_GET res_get;
         test_core_res_FIND res_find;
+        test_core_res_CALC res_calc;
     } result;
 } test_core_op_info_s;
 

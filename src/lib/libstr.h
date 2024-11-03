@@ -30,6 +30,9 @@ extern "C" {
 #include "type.h"
 
 int libstr_strcmp(const char *str1, const char *str2);
+int libstr_strlen(const char *str);
+int libstr_strcat_s(char *dst, u32 bytes, const char *src);
+int libstr_strcpy_s(char *dst, u32 bytes, const char *src);
 
 #ifdef __cplusplus
 }

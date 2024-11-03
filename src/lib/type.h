@@ -63,6 +63,12 @@ typedef u8 bool;
 #define ALIGN(x, a) (((x) + ((a)-1)) & ~((a)-1))
 #define BIT(x) (1 << (x))
 
+#ifndef offsetof
+#define offsetof(type, member) __builtin_offsetof(type, member)
+#endif
+
+#define typeof __typeof__
+
 #ifdef __cplusplus
 }
 #endif

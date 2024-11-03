@@ -33,6 +33,21 @@ static int leafpy_strcmp(const char *str1, const char *str2)
     return strcmp(str1, str2);
 }
 
+static int leafpy_strlen(const char *str)
+{
+    return strlen(str);
+}
+
+static int leafpy_strcat_s(char *dst, u32 bytes, const char *src)
+{
+    return strcat_s(dst, bytes, src);
+}
+
+static int leafpy_strcpy_s(char *dst, u32 bytes, const char *src)
+{
+    return strcpy_s(dst, bytes, src);
+}
+
 #else
 #error "unsupported platform"
 #endif
@@ -40,4 +55,27 @@ static int leafpy_strcmp(const char *str1, const char *str2)
 int libstr_strcmp(const char *str1, const char *str2)
 {
     return leafpy_strcmp(str1, str2);
+}
+
+int libstr_strlen(const char *str)
+{
+    return leafpy_strlen(str);
+}
+
+int libstr_strcat_s(char *dst, u32 bytes, const char *src)
+{
+    int ret = leafpy_strcat_s(dst, bytes, src);
+    if (ret != 0) {
+        core_printf("leafpy_strcat_s failed, ret[%d]\n", ret);
+        return EC_STRING_OPTION_FAILED;
+    }
+}
+
+int libstr_strcpy_s(char *dst, u32 bytes, const char *src)
+{
+    int ret = leafpy_strcpy_s(dst, bytes, src);
+    if (ret != 0) {
+        core_printf("leafpy_strcpy_s failed, ret[%d]\n", ret);
+        return EC_STRING_OPTION_FAILED;
+    }
 }
