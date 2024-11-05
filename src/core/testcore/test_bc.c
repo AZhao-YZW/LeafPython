@@ -96,7 +96,7 @@ void test_bc_proc_JMP(test_bc_s *bc)
 
 void test_bc_proc_PRINT(test_bc_s *bc)
 {
-    core_printf("PRINT: arg1: %u, arg2: %u, arg3: %u\n", bc->arg1, bc->arg2, bc->arg3);
+    core_log("PRINT: arg1: %u, arg2: %u, arg3: %u\n", bc->arg1, bc->arg2, bc->arg3);
 }
 
 void test_bc_proc_EXIT(test_bc_s *bc)

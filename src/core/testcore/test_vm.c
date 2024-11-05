@@ -35,7 +35,7 @@ int test_vm_init(u8 core_id)
 {
     test_vm_s *vm = mm_malloc(sizeof(test_vm_s));
     if (vm == NULL) {
-        core_printf("[test_vm] init alloc vm failed, core_id[%d]\n", core_id);
+        core_log("[test_vm] init alloc vm failed, core_id[%d]\n", core_id);
         return EC_ALLOC_FAILED;
     }
     vm->core_id = core_id;
@@ -54,7 +54,7 @@ int test_vm_free(u8 core_id)
             return EC_OK;
         }
     }
-    core_printf("[test_vm] free core_id[%d] not found\n", core_id);
+    core_log("[test_vm] free core_id[%d] not found\n", core_id);
     return EC_CORE_ID_INVALID;
 }
 
@@ -63,13 +63,13 @@ int test_vm_add(u8 core_id)
     test_vm_s *vm = NULL;
     list_for_each_entry(vm, &g_vm_list, node) {
         if (vm->core_id == core_id) {
-            core_printf("[test_vm] add core_id[%d] failed, already exist\n", core_id);
+            core_log("[test_vm] add core_id[%d] failed, already exist\n", core_id);
             return EC_CORE_ID_INVALID;
         }
     }
     vm = mm_malloc(sizeof(test_vm_s));
     if (vm == NULL) {
-        core_printf("[test_vm] add core_id[%d] failed, alloc vm failed\n", core_id);
+        core_log("[test_vm] add core_id[%d] failed, alloc vm failed\n", core_id);
         return EC_ALLOC_FAILED;
     }
     vm->core_id = core_id;
@@ -82,7 +82,7 @@ static int test_vm_run_bc(test_vm_s *vm, test_bc_s *bc)
     int ret;
     ret = test_bc_proc(bc);
     if (ret != EC_OK) {
-        core_printf("[test_vm] run bc failed, ret[%d]\n", ret);
+        core_log("[test_vm] run bc failed, ret[%d]\n", ret);
     }
     return ret;
 }
@@ -93,7 +93,7 @@ static int test_vm_run_bc_list(test_vm_s *vm, test_frame_s *frame)
     for (i = 0; i < frame->bc_num; i++) {
         ret = test_vm_run_bc(vm, &frame->bc_list[i]);
         if (ret != EC_OK) {
-            core_printf("[test_vm] run bc list failed, num[%d] ret[%d]\n", i, ret);
+            core_log("[test_vm] run bc list failed, num[%d] ret[%d]\n", i, ret);
             return ret;
         }
     }
@@ -109,6 +109,6 @@ int test_vm_run_frame(u8 core_id, test_frame_s *frame)
             return test_vm_run_bc_list(vm, frame);
         }
     }
-    core_printf("[test_vm] run frame core_id[%d] not found\n", core_id);
+    core_log("[test_vm] run frame core_id[%d] not found\n", core_id);
     return EC_CORE_ID_INVALID;
 }

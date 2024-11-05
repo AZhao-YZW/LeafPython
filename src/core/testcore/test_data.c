@@ -33,7 +33,7 @@ static obj_base_attr_s *test_data_find_obj_by_id(u32 obj_id, global_obj_s *globa
     obj_base_attr_s *obj_attr = NULL;
 
     if (global_obj == NULL) {
-        core_printf("[test_data] global_obj is NULL\n");
+        core_log("[test_data] global_obj is NULL\n");
         return NULL;
     }
 
@@ -55,7 +55,7 @@ static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, u32 par
     obj_base_attr_s *obj_attr = NULL;
 
     if (global_obj == NULL) {
-        core_printf("[test_data] global_obj is NULL\n");
+        core_log("[test_data] global_obj is NULL\n");
         return NULL;
     }
 
@@ -96,7 +96,7 @@ static int test_data_get_one_obj_type_op(u8 t, u8 st, one_obj_type_op_s **type_o
             return EC_OK;
         }
     }
-    core_printf("[test_data] unsupport type op: [%d, %d]\n", t, st);
+    core_log("[test_data] unsupport type op: [%d, %d]\n", t, st);
     return EC_OBJ_TYPE_INVALID;
 }
 
@@ -134,7 +134,7 @@ static int test_data_get_two_obj_type_op(u8 t1, u8 st1, u8 t2, u8 st2, two_obj_t
             return EC_OK;
         }
     }
-    core_printf("[test_data] unsupport type op: [%d,%d] [%d,%d]\n", t1, st1, t2, st2);
+    core_log("[test_data] unsupport type op: [%d,%d] [%d,%d]\n", t1, st1, t2, st2);
     return EC_OBJ_TYPE_INVALID;
 }
 
@@ -148,12 +148,12 @@ static int test_data_one_obj_op_proc(obj_op_info_s *info)
     int ret;
 
     if (obj_attr == NULL) {
-        core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
+        core_log("[test_data] find obj_id[%u] failed\n", obj_id);
         return EC_OBJ_NOT_FOUND;
     }
 
     if (OBJ_UNION_TYPE(t, st) != OBJ_UNION_TYPE(obj_attr->obj_type, obj_attr->obj_subtype)) {
-        core_printf("[test_data] obj_id[%u] type[%u,%u] not match real type[%u,%u]\n",
+        core_log("[test_data] obj_id[%u] type[%u,%u] not match real type[%u,%u]\n",
             obj_id, t, st, obj_attr->obj_type, obj_attr->obj_subtype);
         return EC_OBJ_TYPE_INVALID;
     }
@@ -187,19 +187,19 @@ static int test_data_two_obj_op_proc(obj_op_info_s *info)
     int ret;
 
     if (obj1_attr == NULL) {
-        core_printf("[test_data] find obj_id[%u] failed\n", obj1_id);
+        core_log("[test_data] find obj_id[%u] failed\n", obj1_id);
         return EC_OBJ_NOT_FOUND;
     }
 
     if (obj2_attr == NULL) {
-        core_printf("[test_data] find obj_id[%u] failed\n", obj2_id);
+        core_log("[test_data] find obj_id[%u] failed\n", obj2_id);
         return EC_OBJ_NOT_FOUND;
     }
 
     if (OBJ_UNION_2_TYPE(t1, st1, t2, st2) != 
         OBJ_UNION_2_TYPE(obj1_attr->obj_type, obj1_attr->obj_subtype,
                          obj2_attr->obj_type, obj2_attr->obj_subtype)) {
-        core_printf("[test_data] obj_id[%u|%u] type[%u,%u|%u,%u] not match real type[%u,%u|%u,%u]\n",
+        core_log("[test_data] obj_id[%u|%u] type[%u,%u|%u,%u] not match real type[%u,%u|%u,%u]\n",
             obj1_id, obj2_id, t1, st1, t2, st2, obj1_attr->obj_type, obj1_attr->obj_subtype,
             obj2_attr->obj_type, obj2_attr->obj_subtype);
         return EC_OBJ_TYPE_INVALID;
@@ -236,7 +236,7 @@ int test_data_obj_op_proc(obj_op_info_s *info)
         case OBJ_OP_DIV_VAL:
             return test_data_two_obj_op_proc(info);
         default:
-            core_printf("[test_data] type_op[%u] unsupport\n", info->op);
+            core_log("[test_data] type_op[%u] unsupport\n", info->op);
             return EC_UNSUPPORT_OP;
     }
 }
@@ -246,7 +246,7 @@ static int test_data_obj_name_check(const char *obj_name, u32 parent_id, global_
     obj_base_attr_s *obj_attr = NULL;
     list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
         if (obj_attr->parent_id == parent_id && !libstr_strcmp(obj_name, obj_attr->obj_name)) {
-            core_printf("[test_data] obj_name[%s] exist under parent_id[%u]\n", obj_name, parent_id);
+            core_log("[test_data] obj_name[%s] exist under parent_id[%u]\n", obj_name, parent_id);
             return EC_OBJ_NAME_INVALID;
         }
     }
@@ -287,7 +287,7 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, boo
         *obj_size = sizeof(root_obj_s);
         return EC_OK;
     }
-    core_printf("[test_data] obj_type[%u] not supported\n", obj_type);
+    core_log("[test_data] obj_type[%u] not supported\n", obj_type);
     return EC_OBJ_TYPE_INVALID;
 }
 
@@ -302,26 +302,26 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
 
     parent_attr = test_data_find_obj_by_id(parent_id, global_obj);
     if (parent_attr == NULL) {
-        core_printf("[test_data] find parent_obj failed, parent_id[%u]\n", parent_id);
+        core_log("[test_data] find parent_obj failed, parent_id[%u]\n", parent_id);
         return EC_OBJ_NOT_FOUND;
     }
 
     ret = test_data_obj_name_check(obj_name, parent_id, global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_data] obj_name is invalid\n");
+        core_log("[test_data] obj_name is invalid\n");
         return ret;
     }
 
     ret = test_data_get_obj_size(obj_type, obj_subtype, &obj_size, global_obj->is_root_mounted);
     if (ret != EC_OK) {
-        core_printf("[test_data] get obj_size failed, obj_type[%u] obj_subtype[%u]\n",
+        core_log("[test_data] get obj_size failed, obj_type[%u] obj_subtype[%u]\n",
             obj_type, obj_subtype);
         return ret;
     }
     
     obj = mm_malloc(obj_size);
     if (obj == NULL) {
-        core_printf("[test_data] alloc obj failed, obj_size[%u]\n", obj_size);
+        core_log("[test_data] alloc obj failed, obj_size[%u]\n", obj_size);
         return EC_ALLOC_FAILED;
     }
     (void)mm_memset_s(obj, obj_size, 0, obj_size);
@@ -351,7 +351,7 @@ int test_data_obj_del(u32 obj_id, global_obj_s *global_obj)
 {
     obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, global_obj);
     if (obj_attr == NULL) {
-        core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
+        core_log("[test_data] find obj_id[%u] failed\n", obj_id);
         return EC_OBJ_NOT_FOUND;
     }
 
@@ -365,7 +365,7 @@ int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj
 {
     obj_base_attr_s *obj_attr = test_data_find_obj_by_name(obj_name, parent_id, global_obj);
     if (obj_attr == NULL) {
-        core_printf("[test_data] find obj_name[%s] failed\n", obj_name);
+        core_log("[test_data] find obj_name[%s] failed\n", obj_name);
         return EC_OBJ_NOT_FOUND;
     }
     *obj_id = obj_attr->obj_id;
@@ -383,13 +383,13 @@ int test_data_init(global_obj_s **global_obj)
     BUILD_CHECK_OBJ_OP_INFO_SIZE();
 
     if (*global_obj != NULL) {
-        core_printf("[test_data] global_obj shall be NULL before alloc\n");
+        core_log("[test_data] global_obj shall be NULL before alloc\n");
         return EC_PARAM_INVALID;
     }
 
     *global_obj = mm_malloc(sizeof(global_obj_s));
     if (*global_obj == NULL) {
-        core_printf("[test_data] alloc global_obj failed\n");
+        core_log("[test_data] alloc global_obj failed\n");
         return EC_ALLOC_FAILED;
     }
     (*global_obj)->obj_id_cnt = 1;
@@ -408,7 +408,7 @@ int test_data_init(global_obj_s **global_obj)
     ret = test_data_obj_new(OBJ_TYPE_ROOT, NO_OBJ_SUBTYPE, root_obj_name,
                             GLOBAL_OBJ_ID, *global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_data] new obj failed, ret[%d]\n", ret);
+        core_log("[test_data] new obj failed, ret[%d]\n", ret);
         return ret;
     }
     return EC_OK;
@@ -422,12 +422,12 @@ int test_data_free(global_obj_s **global_obj)
 void test_data_print_obj_list(global_obj_s *global_obj)
 {
     obj_base_attr_s *obj_attr = NULL;
-    core_printf("================================ START ================================\n");
+    core_log("================================ START ================================\n");
     list_for_each_entry(obj_attr, &global_obj->obj_attr.node, node) {
-        core_printf("[test_data] obj_id[%u]\t obj_name[%s]\t obj_type[%u]\t obj_subtype[%u]\t "
+        core_log("[test_data] obj_id[%u]\t obj_name[%s]\t obj_type[%u]\t obj_subtype[%u]\t "
                     "layer[%u]\t parent_id[%u]\t child_num[%u]\n",
                     obj_attr->obj_id, obj_attr->obj_name, obj_attr->obj_type, obj_attr->obj_subtype,
                     obj_attr->layer, obj_attr->parent_id, obj_attr->child_num);
     }
-    core_printf("================================= END =================================\n");
+    core_log("================================= END =================================\n");
 }

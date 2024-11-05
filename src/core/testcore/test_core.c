@@ -35,13 +35,13 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
     int ret;
 
     if (op_new->obj_name_len > LEAFPY_MAX_OBJ_NAME_LEN) {
-        core_printf("[test_core] NEW obj_name_len[%u] exceed limit\n", op_new->obj_name_len);
+        core_log("[test_core] NEW obj_name_len[%u] exceed limit\n", op_new->obj_name_len);
         return EC_OBJ_NAME_LEN_EXCEED;
     }
     ret = test_data_obj_new(op_new->obj_type, op_new->obj_subtype, op_new->obj_name,
                             op_new->parent_id, core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] NEW obj_name[%s] obj_type[%u] obj_subtype[%u] failed, ret[%d]\n",
+        core_log("[test_core] NEW obj_name[%s] obj_type[%u] obj_subtype[%u] failed, ret[%d]\n",
             op_new->obj_name, op_new->obj_type, op_new->obj_subtype, ret);
     }
     return ret;
@@ -53,13 +53,13 @@ static int test_core_proc_DEL(test_core_op_info_s *op_info, test_core_s *core)
     int ret;
 
     if (op_del->obj_id == GLOBAL_OBJ_ID || op_del->obj_id == ROOT_OBJ_ID) {
-        core_printf("[test_core] DEL obj_id[%u] failed, global_obj or root_obj is not deletable\n",
+        core_log("[test_core] DEL obj_id[%u] failed, global_obj or root_obj is not deletable\n",
             op_del->obj_id);
         return EC_OBJ_NOT_DELETABLE;
     }
     ret = test_data_obj_del(op_del->obj_id, core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] DEL obj_id[%u] failed, ret[%d]\n", op_del->obj_id, ret);
+        core_log("[test_core] DEL obj_id[%u] failed, ret[%d]\n", op_del->obj_id, ret);
         return ret;
     }
     return EC_OK;
@@ -74,7 +74,7 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
     ret = test_data_obj_get_id_by_name(op_find->obj_name, op_find->parent_id, core->global_obj,
                                        &res_find->obj_id);
     if (ret != EC_OK) {
-        core_printf("[test_core] FIND obj_name[%s] failed, ret[%d]\n", op_find->obj_name, ret);
+        core_log("[test_core] FIND obj_name[%s] failed, ret[%d]\n", op_find->obj_name, ret);
         return ret;
     }
     return EC_OK;
@@ -96,7 +96,7 @@ static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
     int ret;
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
-        core_printf("[test_core] SET obj_id[%u] failed, ret[%d]\n", op_set->obj_id, ret);
+        core_log("[test_core] SET obj_id[%u] failed, ret[%d]\n", op_set->obj_id, ret);
         return ret;
     }
     return EC_OK;
@@ -119,7 +119,7 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
     int ret;
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
-        core_printf("[test_core] GET obj_id[%u] failed, ret[%d]\n", op_get->obj_id, ret);
+        core_log("[test_core] GET obj_id[%u] failed, ret[%d]\n", op_get->obj_id, ret);
         return ret;
     }
     return EC_OK;
@@ -153,11 +153,11 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
         case CALC_OP_MUL:
         case CALC_OP_DIV:
         default:
-            core_printf("[test_core] CALC unsupport op[%d]\n", op_calc->op);
+            core_log("[test_core] CALC unsupport op[%d]\n", op_calc->op);
             return EC_UNSUPPORT_OP;
     }
     if (ret != EC_OK) {
-        core_printf("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
+        core_log("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
             op_calc->op, op_calc->obj1_id, op_calc->obj2_id, ret);
         return ret;
     }
@@ -196,7 +196,7 @@ static int test_core_run_op_proc(test_core_op_info_s *op_info, test_core_s *core
             return g_test_core_op_map[i].proc(op_info, core);
         }
     }
-    core_printf("[test_core] op[%u] is unsupported\n", op_info->op);
+    core_log("[test_core] op[%u] is unsupported\n", op_info->op);
     return EC_UNSUPPORT_OP;
 }
 
@@ -208,20 +208,20 @@ int test_core_run(u8 core_id, test_core_op_info_s *op_info)
     int ret;
 
     if (op_info == NULL) {
-        core_printf("[test_core] run op_info is NULL\n");
+        core_log("[test_core] run op_info is NULL\n");
         return EC_PARAM_INVALID;
     }
     list_for_each_entry(core, &g_core_list, node) {
         if (core->core_id == core_id) {
             ret = test_core_run_op_proc(op_info, core);
             if (ret != EC_OK) {
-                core_printf("[test_core] run op[%u] failed, core_id[%u] ret[%d]\n",
+                core_log("[test_core] run op[%u] failed, core_id[%u] ret[%d]\n",
                     op_info->op, core_id, ret);
             }
             return ret;
         }
     }
-    core_printf("[test_core] core_id[%u] invalid, run op[%u] failed\n", core_id);
+    core_log("[test_core] core_id[%u] invalid, run op[%u] failed\n", core_id);
     return EC_CORE_ID_INVALID;
 }
 
@@ -238,7 +238,7 @@ int test_core_init(u8 core_id)
     BUILD_CHECK_CORE_OP_INFO_SIZE();
 
     if (core == NULL) {
-        core_printf("[test_core] init alloc core failed, core_id[%u]\n", core_id);
+        core_log("[test_core] init alloc core failed, core_id[%u]\n", core_id);
         return EC_ALLOC_FAILED;
     }
     (void)mm_memset_s(core, sizeof(*core), 0, sizeof(*core));
@@ -246,14 +246,14 @@ int test_core_init(u8 core_id)
 
     ret = test_data_init(&core->global_obj);
     if (ret != EC_OK) {
-        core_printf("[test_core] init global_obj failed, core_id[%u]\n", core->core_id);
+        core_log("[test_core] init global_obj failed, core_id[%u]\n", core->core_id);
         mm_free(core);
         return ret;
     }
 
     ret = test_core_builtin_func_init(core->builtin_func);
     if (ret != EC_OK) {
-        core_printf("[test_core] init builtin_func failed, core_id[%u]\n", core->core_id);
+        core_log("[test_core] init builtin_func failed, core_id[%u]\n", core->core_id);
         test_data_free(&core->global_obj);
         mm_free(core);
         return ret;
@@ -277,7 +277,7 @@ test_core_s *test_core_get_core(u8 core_id)
             return core;
         }
     }
-    core_printf("[test_core] get core failed, core_id[%u] not exist\n", core_id);
+    core_log("[test_core] get core failed, core_id[%u] not exist\n", core_id);
     return NULL;
 }
 
@@ -291,7 +291,7 @@ int test_core_free(u8 core_id)
             return EC_OK;
         }
     }
-    core_printf("[test_core] free core failed, core_id[%u] not exist\n", core_id);
+    core_log("[test_core] free core failed, core_id[%u] not exist\n", core_id);
     return EC_CORE_ID_INVALID;
 }
 
@@ -300,13 +300,13 @@ int test_core_add(u8 core_id)
     test_core_s *core = NULL;
     list_for_each_entry(core, &g_core_list, node) {
         if (core->core_id == core_id) {
-            core_printf("[test_core] core_id[%u] already exist\n", core_id);
+            core_log("[test_core] core_id[%u] already exist\n", core_id);
             return EC_CORE_ID_INVALID;
         }
     }
     core = mm_malloc(sizeof(test_core_s));
     if (core == NULL) {
-        core_printf("[test_core] alloc core failed, core_id[%u]\n", core_id);
+        core_log("[test_core] alloc core failed, core_id[%u]\n", core_id);
         return EC_ALLOC_FAILED;
     }
     core->core_id = core_id;

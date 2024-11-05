@@ -53,7 +53,7 @@ void log_printf(enum log_level_e level, const char *fmt, ...)
     va_end(ap);
 }
 
-void core_printf(const char *fmt, ...)
+void core_log(const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -62,7 +62,7 @@ void core_printf(const char *fmt, ...)
     va_end(ap);
 }
 
-void corename_printf(const char *core_name, const char *fmt, ...)
+void corename_log(const char *core_name, const char *fmt, ...)
 {
     va_list ap;
     va_start(ap, fmt);
@@ -75,6 +75,6 @@ void corename_printf(const char *core_name, const char *fmt, ...)
 
 void log_set_level(enum log_level_e level) {}
 void log_printf(enum log_level_e level, const char *fmt, ...) {}
-void core_printf(const char *fmt, ...) {}
+void core_log(const char *fmt, ...) {}
 
 #endif

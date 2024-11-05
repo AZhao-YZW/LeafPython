@@ -79,7 +79,7 @@ void *mm_malloc(u32 size)
 {
     void *ptr = leafpy_malloc(size);
     if (ptr == NULL) {
-        core_printf("[mm] leafpy_malloc failed, size[%u]\n", size);
+        core_log("[mm] leafpy_malloc failed, size[%u]\n", size);
     }
     return ptr;
 }
@@ -94,7 +94,7 @@ int mm_memset_s(void *dest, u32 dsize, int ch, u32 count)
     int ret;
     ret = leafpy_memset_s(dest, dsize, ch, count);
     if (ret != EC_OK) {
-        core_printf("[mm] leafpy_memset_s failed, dsize[%u] count[%u]\n", dsize, count);
+        core_log("[mm] leafpy_memset_s failed, dsize[%u] count[%u]\n", dsize, count);
     }
     return ret;
 }

@@ -66,7 +66,7 @@ int libstr_strcat_s(char *dst, u32 bytes, const char *src)
 {
     int ret = leafpy_strcat_s(dst, bytes, src);
     if (ret != 0) {
-        core_printf("leafpy_strcat_s failed, ret[%d]\n", ret);
+        core_log("leafpy_strcat_s failed, ret[%d]\n", ret);
         return EC_STRING_OPTION_FAILED;
     }
 }
@@ -75,7 +75,7 @@ int libstr_strcpy_s(char *dst, u32 bytes, const char *src)
 {
     int ret = leafpy_strcpy_s(dst, bytes, src);
     if (ret != 0) {
-        core_printf("leafpy_strcpy_s failed, ret[%d]\n", ret);
+        core_log("leafpy_strcpy_s failed, ret[%d]\n", ret);
         return EC_STRING_OPTION_FAILED;
     }
 }

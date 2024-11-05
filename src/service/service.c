@@ -35,7 +35,7 @@ int leafpy_init(void)
     int ret;
     ret = controller_init();
     if (ret != 0) {
-        core_printf("[service] controller init failed, ret[%d]\n", ret);
+        core_log("[service] controller init failed, ret[%d]\n", ret);
     }
     return ret;
 }
@@ -53,7 +53,7 @@ int leafpy_run_code(const char *code, u32 code_len, char *result, u32 result_len
     int ret;
     ret = controller_run_code(code, code_len, result, result_len);
     if (ret != 0) {
-        core_printf("[service] controller run code failed, ret[%d]\n", ret);
+        core_log("[service] controller run code failed, ret[%d]\n", ret);
     }
     return ret;
 }
@@ -63,7 +63,7 @@ int leafpy_run_bytecode(const char *bytecode, u32 bytecode_len, char *result, u3
     int ret;
     ret = controller_run_bytecode(bytecode, bytecode_len, result, result_len);
     if (ret != 0) {
-        core_printf("[service] controller run bc failed, ret[%d]\n", ret);
+        core_log("[service] controller run bc failed, ret[%d]\n", ret);
     }
     return ret;
 }
