@@ -38,7 +38,7 @@ extern "C" {
 #define ROOT_OBJ_ID         1
 #define ROOT_OBJ_NAME       "root_obj"
 
-enum test_data_obj_type_e {
+enum obj_type_e {
     OBJ_TYPE_GLOBAL,   // global (special)
     OBJ_TYPE_ROOT,     // root (special)
     OBJ_TYPE_OBJECT,   // object
@@ -54,7 +54,7 @@ enum test_data_obj_type_e {
 
 #define NO_OBJ_SUBTYPE  0
 
-enum test_data_number_type_e {
+enum number_type_e {
     NUM_TYPE_INT,       // int
     NUM_TYPE_FLOAT,     // float
     NUM_TYPE_BOOL,      // bool
@@ -63,30 +63,92 @@ enum test_data_number_type_e {
 
 #define OBJ_UNION_TYPE(t, st) ((u16)(t) << 8 | (u16)(st))
 #define OBJ_UNION_TYPE_SIMPLE(t, st) OBJ_UNION_TYPE(OBJ_TYPE_##t, st)
-#define OBJ_UNION_2_TYPE(t1, st1, t2, st2) (((u32)(t1) << 24 | (u32)(st1) << 16 | (u32)(t2) << 8 | (u32)(st2)))
+#define OBJ_UNION_2_TYPE(t1, st1, t2, st2) \
+    (((u32)(t1) << 24 | (u32)(st1) << 16 | (u32)(t2) << 8 | (u32)(st2)))
 #define OBJ_UNION_2_TYPE_SIMPLE(t1, st1, t2, st2) \
     OBJ_UNION_2_TYPE(OBJ_TYPE_##t1, st1, OBJ_TYPE_##t2, st2)
 
 typedef struct {
-    u16 obj_union_type;
-    void (*set_obj_val)(void *obj, void *val);
-    void (*get_obj_val)(void *val, void *obj);
-} test_data_type_op_s;
+    u16 obj_ut;     /* obj union type */
+    int (*set_val)(void *obj, void *val);
+    int (*get_val)(void *val, void *obj);
+} one_obj_type_op_s;
 
-#define DEFINE_SET_OBJ_VAL_FUNC(t, st, val_offset, val_type) \
-static inline void set_obj_val_##t##_##st(void *obj, void *val) \
+#define DEFINE_SET_VAL_FUNC(t, st, val_offset, val_type) \
+static int set_val_##t##_##st(void *obj, void *val) \
 { \
     *(val_type *)((u8 *)obj + (val_offset)) = *(val_type *)val; \
+    return EC_OK; \
 }
 
-#define DEFINE_GET_OBJ_VAL_FUNC(t, st, val_offset, val_type) \
-static inline void get_obj_val_##t##_##st(void *val, void *obj) \
+#define DEFINE_GET_VAL_FUNC(t, st, val_offset, val_type) \
+static int get_val_##t##_##st(void *val, void *obj) \
 { \
     *(val_type *)val = *(val_type *)((u8 *)obj + (val_offset)); \
+    return EC_OK; \
 }
 
-#define TEST_DATA_TYPE_OP_ELEMENT(t, st) \
-    { OBJ_UNION_TYPE(t, st), set_obj_val_##t##_##st, get_obj_val_##t##_##st }
+#define ONE_OBJ_OP_ELE(t, st) \
+    { OBJ_UNION_TYPE(t, st), set_val_##t##_##st, get_val_##t##_##st }
+
+typedef struct {
+    u16 obj1_ut;    /*  obj1 union type */
+    u16 obj2_ut;    /*  obj2 union type */
+    int (*add_val)(void *obj1, void *obj2, void *val, u32 val_len);
+    int (*sub_val)(void *obj1, void *obj2, void *val, u32 val_len);
+    int (*mul_val)(void *obj1, void *obj2, void *val, u32 val_len);
+    int (*div_val)(void *obj1, void *obj2, void *val, u32 val_len);
+} two_obj_type_op_s;
+
+#define DEFINE_ADD_VAL_FUNC(t, st, val_offset, val_type) \
+static int add_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
+{ \
+    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) + \
+                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+    return EC_OK; \
+}
+
+#define DEFINE_SUB_VAL_FUNC(t, st, val_offset, val_type) \
+static int sub_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
+{ \
+    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) - \
+                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+    return EC_OK; \
+}
+
+#define DEFINE_MUL_VAL_FUNC(t, st, val_offset, val_type) \
+static int mul_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
+{ \
+    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) * \
+                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+    return EC_OK; \
+}
+
+#define DEFINE_DIV_VAL_FUNC(t, st, val_offset, val_type) \
+static int div_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
+{ \
+    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) / \
+                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+    return EC_OK; \
+}
+
+#define TWO_OBJ_OP_ELE(t, st) \
+    { OBJ_UNION_TYPE(t, st), OBJ_UNION_TYPE(t, st), add_val_##t##_##st, \
+      sub_val_##t##_##st, mul_val_##t##_##st, div_val_##t##_##st }
+
+#define DEFINE_OBJ_OP_UNSUPPORT_FUNC(t, st, op) \
+static int op##_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
+{ \
+    return EC_OBJ_TYPE_INVALID; \
+}
+
+#define DEFINE_OBJ_VAL_OP_FUNC(t, st, val_offset, val_type) \
+    DEFINE_SET_VAL_FUNC(t, st, val_offset, val_type) \
+    DEFINE_GET_VAL_FUNC(t, st, val_offset, val_type) \
+    DEFINE_ADD_VAL_FUNC(t, st, val_offset, val_type) \
+    DEFINE_SUB_VAL_FUNC(t, st, val_offset, val_type) \
+    DEFINE_MUL_VAL_FUNC(t, st, val_offset, val_type) \
+    DEFINE_DIV_VAL_FUNC(t, st, val_offset, val_type) \
 
 /**
  * Global Object
@@ -103,7 +165,7 @@ static inline void get_obj_val_##t##_##st(void *val, void *obj) \
  */
 typedef struct {
     struct list_head node;
-    u8 obj_type;        /* enum test_data_obj_type_e */
+    u8 obj_type;        /* enum obj_type_e */
     u8 obj_subtype;
     bool free_flag;     /* false: using, true: can be freed */
     u8 layer;           /* 0: global, 1: root, >=2: others */
@@ -163,6 +225,7 @@ typedef struct {
 /* String Object */
 typedef struct {
     object_obj_s obj_obj;
+    u32 val_len;
     char *val;
 } string_obj_s;
 
@@ -208,34 +271,50 @@ typedef union {
 /*****************************************************************************
  *                          Interface of test_data
  *****************************************************************************/
-enum test_data_type_op_e {
-    TYPE_OP_SET_OBJ_VAL,
-    TYPE_OP_GET_OBJ_VAL,
-    TYPE_OP_MAX
+enum test_data_obj_op_e {
+    OBJ_OP_SET_VAL,
+    OBJ_OP_GET_VAL,
+    OBJ_OP_ADD_VAL,
+    OBJ_OP_SUB_VAL,
+    OBJ_OP_MUL_VAL,
+    OBJ_OP_DIV_VAL,
+    OBJ_OP_MAX
 };
 
 typedef struct {
-    u8 op;          /* enum test_data_type_op_e */
-    u8 obj_id;
-    u8 obj_type;
-    u8 obj_subtype;
-    global_obj_s *global_obj;
+    u8 op;          /* enum test_data_obj_op_e */
     union {
         struct {
-            void *val;
-        } set_get_obj_val;
-    } param;
-} test_data_obj_op_info_s;
+            u8 obj_type;
+            u8 obj_subtype;
+            u32 obj_id;
+        } one_obj;
+        struct {
+            u8 obj1_type;
+            u8 obj2_type;
+            u8 obj1_subtype;
+            u8 obj2_subtype;
+            u32 obj1_id;
+            u32 obj2_id;
+        } two_obj;
+    };
+    u32 ret_val_len;
+    void *ret_val;  /* return value */
+    global_obj_s *global_obj;
+ } obj_op_info_s;
+
+#define MAX_OBJ_OP_INFO_SIZE  40
+#define BUILD_CHECK_OBJ_OP_INFO_SIZE() \
+    BUILD_BUG_ON(sizeof(obj_op_info_s) > MAX_OBJ_OP_INFO_SIZE)
 
 int test_data_init(global_obj_s **global_obj);
 int test_data_free(global_obj_s **global_obj);
+int test_data_obj_op_proc(obj_op_info_s *info);
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
                       global_obj_s *global_obj);
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
 int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj_s *global_obj,
                                  u32 *obj_id);
-int test_data_obj_op_proc(test_data_obj_op_info_s *info);
-int test_data_obj_add(u32 obj1_id, u32 obj2_id, u32 val_len, global_obj_s *global_obj, void *obj_val);
 
 void test_data_print_obj_list(global_obj_s *global_obj);
 

@@ -44,7 +44,7 @@ enum test_core_op_e {
 };
 
 typedef struct {
-    u8 obj_type;            /* enum test_data_obj_type_e */
+    u8 obj_type;            /* enum obj_type_e */
     u8 obj_subtype;
     u8 obj_name_len;
     u32 parent_id;
@@ -91,6 +91,10 @@ enum test_core_calc_op_e {
 
 typedef struct {
     u8 op;
+    u8 obj1_type;
+    u8 obj2_type;
+    u8 obj1_subtype;
+    u8 obj2_subtype;
     u32 obj1_id;
     u32 obj2_id;
     u32 val_len;
@@ -119,8 +123,9 @@ typedef struct {
     } result;
 } test_core_op_info_s;
 
-#define MAX_TEST_CORE_OP_INFO_SIZE  32
-#define BUILD_CHECK_OP_INFO_SIZE()  BUILD_BUG_ON(sizeof(test_core_op_info_s) > MAX_TEST_CORE_OP_INFO_SIZE)
+#define MAX_TEST_CORE_OP_INFO_SIZE  40
+#define BUILD_CHECK_CORE_OP_INFO_SIZE() \
+    BUILD_BUG_ON(sizeof(test_core_op_info_s) > MAX_TEST_CORE_OP_INFO_SIZE)
 
 typedef struct {
     int (*eq)(u8 obj1_id, u8 obj2_id);

@@ -73,35 +73,172 @@ static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, u32 par
     return NULL;
 }
 
-DEFINE_SET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_INT, offsetof(int_obj_s, val), s64)
-DEFINE_SET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT, offsetof(float_obj_s, val), f64)
-DEFINE_SET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL, offsetof(bool_obj_s, val), u8)
-DEFINE_SET_OBJ_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_INT, offsetof(int_obj_s, val), s64)
+DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT, offsetof(float_obj_s, val), f64)
+DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL, offsetof(bool_obj_s, val), u8)
 
-DEFINE_GET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_INT, offsetof(int_obj_s, val), s64)
-DEFINE_GET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT, offsetof(float_obj_s, val), f64)
-DEFINE_GET_OBJ_VAL_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL, offsetof(bool_obj_s, val), u8)
-DEFINE_GET_OBJ_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+DEFINE_SET_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+DEFINE_GET_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
 
-static test_data_type_op_s type_op_map[] = {
-    TEST_DATA_TYPE_OP_ELEMENT(OBJ_TYPE_NUMBER, NUM_TYPE_INT),
-    TEST_DATA_TYPE_OP_ELEMENT(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT),
-    TEST_DATA_TYPE_OP_ELEMENT(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL),
-    TEST_DATA_TYPE_OP_ELEMENT(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE),
-};
-
-static int test_data_get_type_op(u8 obj_type, u8 obj_subtype, test_data_type_op_s **type_op)
+static int test_data_get_one_obj_type_op(u8 t, u8 st, one_obj_type_op_s **type_op)
 {
-    u16 obj_union_type = OBJ_UNION_TYPE(obj_type, obj_subtype);
+    static one_obj_type_op_s type_op_map[] = {
+        ONE_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_INT),
+        ONE_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT),
+        ONE_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL),
+        ONE_OBJ_OP_ELE(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE),
+    };
+    u16 obj_ut = OBJ_UNION_TYPE(t, st);
     int i;
     for (i = 0; i < ARRAY_SIZE(type_op_map); i++) {
-        if (obj_union_type == type_op_map[i].obj_union_type) {
+        if (obj_ut == type_op_map[i].obj_ut) {
             *type_op = &type_op_map[i];
             return EC_OK;
         }
     }
-    core_printf("[test_data] unsupport type op: [%d, %d]\n", obj_type, obj_subtype);
+    core_printf("[test_data] unsupport type op: [%d, %d]\n", t, st);
     return EC_OBJ_TYPE_INVALID;
+}
+
+DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, sub)
+DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, mul)
+DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, div)
+static int add_val_OBJ_TYPE_STRING_NO_OBJ_SUBTYPE(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    int ret;
+    ret = libstr_strcpy_s((char *)val, val_len, ((string_obj_s *)obj1)->val);
+    if (ret != EC_OK) {
+        return ret;
+    }
+    ret = libstr_strcat_s((char *)val, val_len, ((string_obj_s *)obj2)->val);
+    if (ret != EC_OK) {
+        return ret;
+    }
+    return EC_OK;
+}
+
+static int test_data_get_two_obj_type_op(u8 t1, u8 st1, u8 t2, u8 st2, two_obj_type_op_s **type_op)
+{
+    static two_obj_type_op_s type_op_map[] = {
+        TWO_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_INT),
+        TWO_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT),
+        TWO_OBJ_OP_ELE(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL),
+        TWO_OBJ_OP_ELE(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE),
+    };
+    u16 obj1_ut = OBJ_UNION_TYPE(t1, st1);
+    u16 obj2_ut = OBJ_UNION_TYPE(t2, st2);
+    int i;
+    for (i = 0; i < ARRAY_SIZE(type_op_map); i++) {
+        if (obj1_ut == type_op_map[i].obj1_ut && obj2_ut == type_op_map[i].obj2_ut) {
+            *type_op = &type_op_map[i];
+            return EC_OK;
+        }
+    }
+    core_printf("[test_data] unsupport type op: [%d,%d] [%d,%d]\n", t1, st1, t2, st2);
+    return EC_OBJ_TYPE_INVALID;
+}
+
+static int test_data_one_obj_op_proc(obj_op_info_s *info)
+{
+    u8 t = info->one_obj.obj_type;
+    u8 st = info->one_obj.obj_subtype;
+    u32 obj_id = info->one_obj.obj_id;
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, info->global_obj);
+    one_obj_type_op_s *type_op = NULL;
+    int ret;
+
+    if (obj_attr == NULL) {
+        core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+
+    if (OBJ_UNION_TYPE(t, st) != OBJ_UNION_TYPE(obj_attr->obj_type, obj_attr->obj_subtype)) {
+        core_printf("[test_data] obj_id[%u] type[%u,%u] not match real type[%u,%u]\n",
+            obj_id, t, st, obj_attr->obj_type, obj_attr->obj_subtype);
+        return EC_OBJ_TYPE_INVALID;
+    }
+
+    ret = test_data_get_one_obj_type_op(t, st, &type_op);
+    if (ret != EC_OK) {
+        return ret;
+    }
+
+    switch (info->op) {
+        case OBJ_OP_SET_VAL:
+            return type_op->set_val(obj_attr, info->ret_val);
+        case OBJ_OP_GET_VAL:
+            return type_op->get_val(info->ret_val, obj_attr);
+        default:
+            return EC_UNSUPPORT_OP;
+    }
+}
+
+static int test_data_two_obj_op_proc(obj_op_info_s *info)
+{
+    u8 t1 = info->two_obj.obj1_type;
+    u8 st1 = info->two_obj.obj1_subtype;
+    u32 obj1_id = info->two_obj.obj1_id;
+    u8 t2 = info->two_obj.obj2_type;
+    u8 st2 = info->two_obj.obj2_subtype;
+    u32 obj2_id = info->two_obj.obj2_id;
+    obj_base_attr_s *obj1_attr = test_data_find_obj_by_id(obj1_id, info->global_obj);
+    obj_base_attr_s *obj2_attr = test_data_find_obj_by_id(obj2_id, info->global_obj);
+    two_obj_type_op_s *type_op = NULL;
+    int ret;
+
+    if (obj1_attr == NULL) {
+        core_printf("[test_data] find obj_id[%u] failed\n", obj1_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+
+    if (obj2_attr == NULL) {
+        core_printf("[test_data] find obj_id[%u] failed\n", obj2_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+
+    if (OBJ_UNION_2_TYPE(t1, st1, t2, st2) != 
+        OBJ_UNION_2_TYPE(obj1_attr->obj_type, obj1_attr->obj_subtype,
+                         obj2_attr->obj_type, obj2_attr->obj_subtype)) {
+        core_printf("[test_data] obj_id[%u|%u] type[%u,%u|%u,%u] not match real type[%u,%u|%u,%u]\n",
+            obj1_id, obj2_id, t1, st1, t2, st2, obj1_attr->obj_type, obj1_attr->obj_subtype,
+            obj2_attr->obj_type, obj2_attr->obj_subtype);
+        return EC_OBJ_TYPE_INVALID;
+    }
+
+    ret = test_data_get_two_obj_type_op(t1, st1, t2, st2, &type_op);
+    if (ret != EC_OK) {
+        return ret;
+    }
+
+    switch (info->op) {
+        case OBJ_OP_ADD_VAL:
+            return type_op->add_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
+        case OBJ_OP_SUB_VAL:
+            return type_op->sub_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
+        case OBJ_OP_MUL_VAL:
+            return type_op->mul_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
+        case OBJ_OP_DIV_VAL:
+            return type_op->div_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
+        default:
+            return EC_UNSUPPORT_OP;
+    }
+}
+
+int test_data_obj_op_proc(obj_op_info_s *info)
+{
+    switch (info->op) {
+        case OBJ_OP_SET_VAL:
+        case OBJ_OP_GET_VAL:
+            return test_data_one_obj_op_proc(info);
+        case OBJ_OP_ADD_VAL:
+        case OBJ_OP_SUB_VAL:
+        case OBJ_OP_MUL_VAL:
+        case OBJ_OP_DIV_VAL:
+            return test_data_two_obj_op_proc(info);
+        default:
+            core_printf("[test_data] type_op[%u] unsupport\n", info->op);
+            return EC_UNSUPPORT_OP;
+    }
 }
 
 static int test_data_obj_name_check(const char *obj_name, u32 parent_id, global_obj_s *global_obj)
@@ -119,26 +256,26 @@ static int test_data_obj_name_check(const char *obj_name, u32 parent_id, global_
 static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, bool is_root_mounted)
 {
     static struct {
-        u8 obj_type;
-        u8 obj_subtype;
+        u16 obj_ut;
         u8 obj_size;
     } obj_size_map[] = {
-        { OBJ_TYPE_OBJECT, NO_OBJ_SUBTYPE,   sizeof(object_obj_s) },
-        { OBJ_TYPE_NUMBER, NUM_TYPE_INT,     sizeof(int_obj_s) },
-        { OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT,   sizeof(float_obj_s) },
-        { OBJ_TYPE_NUMBER, NUM_TYPE_BOOL,    sizeof(bool_obj_s) },
-        { OBJ_TYPE_BOOL,   NO_OBJ_SUBTYPE,   sizeof(bool_obj_s) },
-        { OBJ_TYPE_NUMBER, NUM_TYPE_COMPLEX, sizeof(complex_obj_s) },
-        { OBJ_TYPE_STRING, NO_OBJ_SUBTYPE,   sizeof(string_obj_s) },
-        { OBJ_TYPE_LIST,   NO_OBJ_SUBTYPE,   sizeof(list_obj_s) },
-        { OBJ_TYPE_TUPLE,  NO_OBJ_SUBTYPE,   sizeof(tuple_obj_s) },
-        { OBJ_TYPE_SET,    NO_OBJ_SUBTYPE,   sizeof(set_obj_s) },
-        { OBJ_TYPE_DICT,   NO_OBJ_SUBTYPE,   sizeof(dict_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_OBJECT, NO_OBJ_SUBTYPE),   sizeof(object_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_INT),     sizeof(int_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT),   sizeof(float_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL),    sizeof(bool_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_BOOL,   NO_OBJ_SUBTYPE),   sizeof(bool_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_COMPLEX), sizeof(complex_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE),   sizeof(string_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_LIST,   NO_OBJ_SUBTYPE),   sizeof(list_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_TUPLE,  NO_OBJ_SUBTYPE),   sizeof(tuple_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_SET,    NO_OBJ_SUBTYPE),   sizeof(set_obj_s) },
+        { OBJ_UNION_TYPE(OBJ_TYPE_DICT,   NO_OBJ_SUBTYPE),   sizeof(dict_obj_s) },
     };
+    u16 obj_ut = OBJ_UNION_TYPE(obj_type, obj_subtype);
     int i;
 
     for (i = 0; i < ARRAY_SIZE(obj_size_map); i++) {
-        if (obj_type == obj_size_map[i].obj_type && obj_subtype == obj_size_map[i].obj_subtype) {
+        if (obj_ut == obj_size_map[i].obj_ut) {
             log_printf(LOG_DEBUG, "[test_data] get_obj_size obj_type[%d] obj_subtype[%d] obj_size[%d]\n",
                 obj_type, obj_subtype, obj_size_map[i].obj_size);
             *obj_size = obj_size_map[i].obj_size;
@@ -150,7 +287,7 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, boo
         *obj_size = sizeof(root_obj_s);
         return EC_OK;
     }
-    core_printf("[test_data] obj_type[%d] not supported\n", obj_type);
+    core_printf("[test_data] obj_type[%u] not supported\n", obj_type);
     return EC_OBJ_TYPE_INVALID;
 }
 
@@ -234,112 +371,6 @@ int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj
     *obj_id = obj_attr->obj_id;
     return EC_OK;
 }
-
-int test_data_obj_op_proc(test_data_obj_op_info_s *info)
-{
-    u8 obj_id = info->obj_id;
-    u8 obj_type = info->obj_type;
-    u8 obj_subtype = info->obj_subtype;
-    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, info->global_obj);
-    test_data_type_op_s *type_op = NULL;
-    int ret;
-
-    if (obj_attr == NULL) {
-        core_printf("[test_data] find obj_id[%u] failed\n", obj_id);
-        return EC_OBJ_NOT_FOUND;
-    }
-
-    if (obj_type != obj_attr->obj_type || obj_subtype != obj_attr->obj_subtype) {
-        core_printf("[test_data] obj_id[%u] type[%u, %u] not match real type[%u, %u]\n",
-            obj_id, obj_type, obj_subtype, obj_attr->obj_type, obj_attr->obj_subtype);
-        return EC_OBJ_TYPE_INVALID;
-    }
-
-    ret = test_data_get_type_op(obj_type, obj_subtype, &type_op);
-    if (ret != EC_OK) {
-        return ret;
-    }
-
-    switch (info->op) {
-        case TYPE_OP_SET_OBJ_VAL:
-            type_op->set_obj_val((void *)obj_attr, info->param.set_get_obj_val.val);
-            break;
-        case TYPE_OP_GET_OBJ_VAL:
-            type_op->get_obj_val(info->param.set_get_obj_val.val, (void *)obj_attr);
-            break;
-        default:
-            core_printf("[test_data] type_op[%u] unsupport\n", info->op);
-            return EC_UNSUPPORT_OP;
-    }
-    return EC_OK;
-}
-
-static int test_data_obj_add_proc(obj_base_attr_s *obj1_attr, obj_base_attr_s *obj2_attr,
-                                  void *obj_val, u32 val_len)
-{
-    u8 t1 = obj1_attr->obj_type;
-    u8 st1 = obj1_attr->obj_subtype;
-    u8 t2 = obj2_attr->obj_type;
-    u8 st2 = obj2_attr->obj_subtype;
-
-    switch (OBJ_UNION_2_TYPE(t1, st1, t2, st2)) {
-        case OBJ_UNION_2_TYPE_SIMPLE(NUMBER, NUM_TYPE_INT, NUMBER, NUM_TYPE_INT):
-            *(s64 *)obj_val = ((int_obj_s *)obj1_attr)->val + ((int_obj_s *)obj2_attr)->val;
-            return EC_OK;
-        case OBJ_UNION_2_TYPE_SIMPLE(NUMBER, NUM_TYPE_FLOAT, NUMBER, NUM_TYPE_FLOAT):
-            *(f64 *)obj_val = ((float_obj_s *)obj1_attr)->val + ((float_obj_s *)obj2_attr)->val;
-            return EC_OK;
-        case OBJ_UNION_2_TYPE_SIMPLE(NUMBER, NUM_TYPE_BOOL, NUMBER, NUM_TYPE_BOOL):
-            *(u8 *)obj_val = ((bool_obj_s *)obj1_attr)->val + ((bool_obj_s *)obj2_attr)->val;
-            return EC_OK;
-        case OBJ_UNION_2_TYPE_SIMPLE(STRING, NO_OBJ_SUBTYPE, STRING, NO_OBJ_SUBTYPE):
-            char *str = *(char **)obj_val;
-            u32 str_len = val_len;
-            u32 str1_len = libstr_strlen(((string_obj_s *)obj1_attr)->val);
-            u32 str2_len = libstr_strlen(((string_obj_s *)obj2_attr)->val);
-            int ret;
-            ret = libstr_strcpy_s(str, str_len, ((string_obj_s *)obj1_attr)->val);
-            if (ret != EC_OK) {
-                return ret;
-            }
-            ret = libstr_strcat_s(str, str_len, ((string_obj_s *)obj2_attr)->val);
-            if (ret != EC_OK) {
-                return ret;
-            }
-            return EC_OK;
-        case OBJ_UNION_2_TYPE_SIMPLE(NUMBER, NUM_TYPE_INT, STRING, NO_OBJ_SUBTYPE):
-        case OBJ_UNION_2_TYPE_SIMPLE(STRING, NO_OBJ_SUBTYPE, NUMBER, NUM_TYPE_INT):
-            return EC_MAY_SUPPORT_LATER;
-        default:
-            core_printf("[test_data] unsupport type op: [%d, %d] add [%d, %d]\n", t1, st1, t2, st2);
-            return EC_OBJ_TYPE_INVALID;
-    }
-}
-
-int test_data_obj_add(u32 obj1_id, u32 obj2_id, u32 val_len, global_obj_s *global_obj, void *obj_val)
-{
-    obj_base_attr_s *obj1_attr = test_data_find_obj_by_id(obj1_id, global_obj);
-    obj_base_attr_s *obj2_attr = test_data_find_obj_by_id(obj2_id, global_obj);
-    int ret;
-
-    if (obj1_attr == NULL || obj2_attr == NULL) {
-        core_printf("[test_data] find obj failed, obj1_id[%u] obj2_id[%u]\n", obj1_id, obj2_id);
-        return EC_OBJ_NOT_FOUND;
-    }
-
-    if (obj_val == NULL) {
-        core_printf("[test_data] obj_val is NULL\n");
-        return EC_PARAM_INVALID;
-    }
-
-    ret = test_data_obj_add_proc(obj1_attr, obj2_attr, obj_val, val_len);
-    if (ret != EC_OK) {
-        core_printf("[test_data] add obj failed, obj1_id[%u] obj2_id[%u]\n", obj1_id, obj2_id);
-        return ret;
-    }
-    return EC_OK;
-}
-
 int test_data_init(global_obj_s **global_obj)
 {
     static char global_obj_name[] = GLOBAL_OBJ_NAME;
@@ -349,6 +380,7 @@ int test_data_init(global_obj_s **global_obj)
 
     BUILD_CHECK_OBJ_ATTR_SIZE();
     BUILD_CHECK_OBJ_SIZE();
+    BUILD_CHECK_OBJ_OP_INFO_SIZE();
 
     if (*global_obj != NULL) {
         core_printf("[test_data] global_obj shall be NULL before alloc\n");

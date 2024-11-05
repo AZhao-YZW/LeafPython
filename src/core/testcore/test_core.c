@@ -83,13 +83,15 @@ static int test_core_proc_FIND(test_core_op_info_s *op_info, test_core_s *core)
 static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_SET *op_set = &op_info->info.op_set;
-    test_data_obj_op_info_s info = {
-        .op = TYPE_OP_SET_OBJ_VAL,
-        .obj_id = op_set->obj_id,
-        .obj_type = op_set->obj_type,
-        .obj_subtype = op_set->obj_subtype,
+    obj_op_info_s info = {
+        .op = OBJ_OP_SET_VAL,
+        .one_obj = {
+            .obj_type = op_set->obj_type,
+            .obj_subtype = op_set->obj_subtype,
+            .obj_id = op_set->obj_id,
+        },
+        .ret_val = op_set->obj_val,
         .global_obj = core->global_obj,
-        .param = {.set_get_obj_val = {.val = op_set->obj_val}}
     };
     int ret;
     ret = test_data_obj_op_proc(&info);
@@ -104,13 +106,15 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_GET *op_get = &op_info->info.op_get;
     test_core_res_GET *res_get = &op_info->result.res_get;
-    test_data_obj_op_info_s info = {
-        .op = TYPE_OP_GET_OBJ_VAL,
-        .obj_id = op_get->obj_id,
-        .obj_type = op_get->obj_type,
-        .obj_subtype = op_get->obj_subtype,
+    obj_op_info_s info = {
+        .op = OBJ_OP_GET_VAL,
+        .one_obj = {
+            .obj_type = op_get->obj_type,
+            .obj_subtype = op_get->obj_subtype,
+            .obj_id = op_get->obj_id,
+        },
+        .ret_val = res_get->obj_val,
         .global_obj = core->global_obj,
-        .param = {.set_get_obj_val = {.val = res_get->obj_val}}
     };
     int ret;
     ret = test_data_obj_op_proc(&info);
@@ -125,12 +129,25 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_CALC *op_calc = &op_info->info.op_calc;
     test_core_res_CALC *res_calc = &op_info->result.res_calc;
+    obj_op_info_s info = {
+        .two_obj = {
+            .obj1_type = op_calc->obj1_type,
+            .obj1_subtype = op_calc->obj1_subtype,
+            .obj1_id = op_calc->obj1_id,
+            .obj2_type = op_calc->obj2_type,
+            .obj2_subtype = op_calc->obj2_subtype,
+            .obj2_id = op_calc->obj2_id,
+        },
+        .ret_val_len = op_calc->val_len,
+        .ret_val = res_calc->obj_val,
+        .global_obj = core->global_obj,
+    };
     int ret;
 
     switch (op_calc->op) {
         case CALC_OP_ADD:
-            ret = test_data_obj_add(op_calc->obj1_id, op_calc->obj2_id, op_calc->val_len,
-                                    core->global_obj, res_calc->obj_val);
+            info.op = OBJ_OP_ADD_VAL;
+            ret = test_data_obj_op_proc(&info);
             break;
         case CALC_OP_SUB:
         case CALC_OP_MUL:
@@ -218,7 +235,7 @@ int test_core_init(u8 core_id)
     int ret;
     test_core_s *core = mm_malloc(sizeof(*core));
 
-    BUILD_CHECK_OP_INFO_SIZE();
+    BUILD_CHECK_CORE_OP_INFO_SIZE();
 
     if (core == NULL) {
         core_printf("[test_core] init alloc core failed, core_id[%u]\n", core_id);
