@@ -84,7 +84,7 @@ static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_SET *op_set = &op_info->info.op_set;
     obj_op_info_s info = {
-        .op = OBJ_OP_SET_VAL,
+        .op = OBJ_OP_SET,
         .one_obj = {
             .obj_type = op_set->obj_type,
             .obj_subtype = op_set->obj_subtype,
@@ -107,7 +107,7 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
     test_core_op_GET *op_get = &op_info->info.op_get;
     test_core_res_GET *res_get = &op_info->result.res_get;
     obj_op_info_s info = {
-        .op = OBJ_OP_GET_VAL,
+        .op = OBJ_OP_GET,
         .one_obj = {
             .obj_type = op_get->obj_type,
             .obj_subtype = op_get->obj_subtype,
@@ -146,7 +146,7 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 
     switch (op_calc->op) {
         case CALC_OP_ADD:
-            info.op = OBJ_OP_ADD_VAL;
+            info.op = OBJ_OP_ADD;
             ret = test_data_obj_op_proc(&info);
             break;
         case CALC_OP_SUB:

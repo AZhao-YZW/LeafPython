@@ -68,87 +68,190 @@ enum number_type_e {
 #define OBJ_UNION_2_TYPE_SIMPLE(t1, st1, t2, st2) \
     OBJ_UNION_2_TYPE(OBJ_TYPE_##t1, st1, OBJ_TYPE_##t2, st2)
 
+/*****************************************************************************
+ *                         object operation code
+ *****************************************************************************/
+enum test_data_obj_op_e {
+    // one object operation
+    OBJ_OP_SET,
+    OBJ_OP_GET,
+    OBJ_OP_LOGIC_NOT,
+    ONE_OBJ_OP_MAX,
+    // two object operation
+    OBJ_OP_ADD = ONE_OBJ_OP_MAX,
+    OBJ_OP_SUB,
+    OBJ_OP_MUL,
+    OBJ_OP_DIV,
+    OBJ_OP_EQ,
+    OBJ_OP_NE,
+    OBJ_OP_GE,
+    OBJ_OP_GT,
+    OBJ_OP_LE,
+    OBJ_OP_LT,
+    OBJ_OP_LOGIC_AND,
+    OBJ_OP_LOGIC_OR,
+    TWO_OBJ_OP_MAX
+};
+
+#define OBJ_VAL(obj, loc, vt) (*(vt *)((u8 *)(obj) + (loc)))
+#define OBJ_FUNC_NAME(op, t, st) op##_##t##_##st
+
+/*****************************************************************************
+ *                          one object operation
+ *****************************************************************************/
 typedef struct {
     u16 obj_ut;     /* obj union type */
-    int (*set_val)(void *obj, void *val);
-    int (*get_val)(void *val, void *obj);
+    union {
+        int (*op[ONE_OBJ_OP_MAX])(void *obj, void *val);
+        struct {
+            int (*set)(void *obj, void *val);
+            int (*get)(void *obj, void *val);
+            int (*logic_not)(void *obj, void *val);
+        };
+    };
 } one_obj_type_op_s;
 
-#define DEFINE_SET_VAL_FUNC(t, st, val_offset, val_type) \
-static int set_val_##t##_##st(void *obj, void *val) \
-{ \
-    *(val_type *)((u8 *)obj + (val_offset)) = *(val_type *)val; \
+#define DEFINE_OBJ_SET_FUNC(t, st, loc, vt) \
+static int set_##t##_##st(void *obj, void *val) { \
+    OBJ_VAL(obj, loc, vt) = *(vt *)val; \
     return EC_OK; \
 }
-
-#define DEFINE_GET_VAL_FUNC(t, st, val_offset, val_type) \
-static int get_val_##t##_##st(void *val, void *obj) \
-{ \
-    *(val_type *)val = *(val_type *)((u8 *)obj + (val_offset)); \
+#define DEFINE_OBJ_GET_FUNC(t, st, loc, vt) \
+static int get_##t##_##st(void *obj, void *val) { \
+    *(vt *)val = OBJ_VAL(obj, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_LOGIC_NOT_FUNC(t, st, loc, vt) \
+static int logic_not_##t##_##st(void *obj, void *val) { \
+    *(bool *)val = !OBJ_VAL(obj, loc, vt); \
     return EC_OK; \
 }
 
 #define ONE_OBJ_OP_ELE(t, st) \
-    { OBJ_UNION_TYPE(t, st), set_val_##t##_##st, get_val_##t##_##st }
+    { OBJ_UNION_TYPE(t, st), set_##t##_##st, get_##t##_##st, logic_not_##t##_##st }
 
+#define DEFINE_ONE_OBJ_NA_FUNC(op, t, st) \
+static int op##_##t##_##st(void *obj, void *val) { \
+    return EC_OBJ_TYPE_INVALID; \
+}
+
+/*****************************************************************************
+ *                          two object operation
+ *****************************************************************************/
 typedef struct {
     u16 obj1_ut;    /*  obj1 union type */
     u16 obj2_ut;    /*  obj2 union type */
-    int (*add_val)(void *obj1, void *obj2, void *val, u32 val_len);
-    int (*sub_val)(void *obj1, void *obj2, void *val, u32 val_len);
-    int (*mul_val)(void *obj1, void *obj2, void *val, u32 val_len);
-    int (*div_val)(void *obj1, void *obj2, void *val, u32 val_len);
+    union {
+        int (*op[TWO_OBJ_OP_MAX - ONE_OBJ_OP_MAX])(void *obj1, void *obj2, void *val, u32 val_len);
+        struct {
+            int (*add)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*sub)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*mul)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*div)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*eq)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*ne)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*ge)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*gt)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*le)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*lt)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*logic_and)(void *obj1, void *obj2, void *val, u32 val_len);
+            int (*logic_or)(void *obj1, void *obj2, void *val, u32 val_len);
+        };
+    };
 } two_obj_type_op_s;
 
-#define DEFINE_ADD_VAL_FUNC(t, st, val_offset, val_type) \
-static int add_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
-{ \
-    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) + \
-                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+#define DEFINE_OBJ_ADD_FUNC(t, st, loc, vt) \
+static int add_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(vt *)val = OBJ_VAL(obj1, loc, vt) + OBJ_VAL(obj2, loc, vt); \
     return EC_OK; \
 }
-
-#define DEFINE_SUB_VAL_FUNC(t, st, val_offset, val_type) \
-static int sub_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
-{ \
-    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) - \
-                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+#define DEFINE_OBJ_SUB_FUNC(t, st, loc, vt) \
+static int sub_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(vt *)val = OBJ_VAL(obj1, loc, vt) - OBJ_VAL(obj2, loc, vt); \
     return EC_OK; \
 }
-
-#define DEFINE_MUL_VAL_FUNC(t, st, val_offset, val_type) \
-static int mul_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
-{ \
-    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) * \
-                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+#define DEFINE_OBJ_MUL_FUNC(t, st, loc, vt) \
+static int mul_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(vt *)val = OBJ_VAL(obj1, loc, vt) * OBJ_VAL(obj2, loc, vt); \
     return EC_OK; \
 }
-
-#define DEFINE_DIV_VAL_FUNC(t, st, val_offset, val_type) \
-static int div_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
-{ \
-    *(val_type *)val = *(val_type *)((u8 *)obj1 + (val_offset)) / \
-                       *(val_type *)((u8 *)obj2 + (val_offset)); \
+#define DEFINE_OBJ_DIV_FUNC(t, st, loc, vt) \
+static int div_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(vt *)val = OBJ_VAL(obj1, loc, vt) / OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_EQ_FUNC(t, st, loc, vt) \
+static int eq_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) == OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_NE_FUNC(t, st, loc, vt) \
+static int ne_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) != OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_GE_FUNC(t, st, loc, vt) \
+static int ge_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) >= OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_GT_FUNC(t, st, loc, vt) \
+static int gt_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) > OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_LE_FUNC(t, st, loc, vt) \
+static int le_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) <= OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_LT_FUNC(t, st, loc, vt) \
+static int lt_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) < OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_LOGIC_AND_FUNC(t, st, loc, vt) \
+static int logic_and_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) && OBJ_VAL(obj2, loc, vt); \
+    return EC_OK; \
+}
+#define DEFINE_OBJ_LOGIC_OR_FUNC(t, st, loc, vt) \
+static int logic_or_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
+    *(bool *)val = OBJ_VAL(obj1, loc, vt) || OBJ_VAL(obj2, loc, vt); \
     return EC_OK; \
 }
 
 #define TWO_OBJ_OP_ELE(t, st) \
-    { OBJ_UNION_TYPE(t, st), OBJ_UNION_TYPE(t, st), add_val_##t##_##st, \
-      sub_val_##t##_##st, mul_val_##t##_##st, div_val_##t##_##st }
+    { OBJ_UNION_TYPE(t, st), OBJ_UNION_TYPE(t, st), add_##t##_##st, \
+      sub_##t##_##st, mul_##t##_##st, div_##t##_##st, eq_##t##_##st, \
+      ne_##t##_##st, ge_##t##_##st, gt_##t##_##st, le_##t##_##st, \
+      lt_##t##_##st, logic_and_##t##_##st, logic_or_##t##_##st }
 
-#define DEFINE_OBJ_OP_UNSUPPORT_FUNC(t, st, op) \
-static int op##_val_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) \
-{ \
+#define DEFINE_TWO_OBJ_NA_FUNC(op, t, st) \
+static int op##_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
     return EC_OBJ_TYPE_INVALID; \
 }
 
-#define DEFINE_OBJ_VAL_OP_FUNC(t, st, val_offset, val_type) \
-    DEFINE_SET_VAL_FUNC(t, st, val_offset, val_type) \
-    DEFINE_GET_VAL_FUNC(t, st, val_offset, val_type) \
-    DEFINE_ADD_VAL_FUNC(t, st, val_offset, val_type) \
-    DEFINE_SUB_VAL_FUNC(t, st, val_offset, val_type) \
-    DEFINE_MUL_VAL_FUNC(t, st, val_offset, val_type) \
-    DEFINE_DIV_VAL_FUNC(t, st, val_offset, val_type) \
+/*****************************************************************************
+ *                      all object operation functions
+ *****************************************************************************/
+/* obj_type,  obj_subtype,  val_offset,  val_type */
+#define DEFINE_OBJ_ALL_OP_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_SET_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_GET_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_LOGIC_NOT_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_ADD_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_SUB_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_MUL_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_DIV_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_EQ_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_NE_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_GE_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_GT_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_LE_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_LT_FUNC(t, st, loc, vt)  \
+    DEFINE_OBJ_LOGIC_AND_FUNC(t, st, loc, vt) \
+    DEFINE_OBJ_LOGIC_OR_FUNC(t, st, loc, vt)
 
 /**
  * Global Object
@@ -271,15 +374,6 @@ typedef union {
 /*****************************************************************************
  *                          Interface of test_data
  *****************************************************************************/
-enum test_data_obj_op_e {
-    OBJ_OP_SET_VAL,
-    OBJ_OP_GET_VAL,
-    OBJ_OP_ADD_VAL,
-    OBJ_OP_SUB_VAL,
-    OBJ_OP_MUL_VAL,
-    OBJ_OP_DIV_VAL,
-    OBJ_OP_MAX
-};
 
 typedef struct {
     u8 op;          /* enum test_data_obj_op_e */

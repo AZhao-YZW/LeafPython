@@ -73,12 +73,20 @@ static obj_base_attr_s *test_data_find_obj_by_name(const char *obj_name, u32 par
     return NULL;
 }
 
-DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_INT, offsetof(int_obj_s, val), s64)
-DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT, offsetof(float_obj_s, val), f64)
-DEFINE_OBJ_VAL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL, offsetof(bool_obj_s, val), u8)
+/*****************************************************************************
+ *                          all object operation
+ *****************************************************************************/
+DEFINE_OBJ_ALL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_INT, offsetof(int_obj_s, val), s64)
+DEFINE_OBJ_ALL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT, offsetof(float_obj_s, val), f64)
+DEFINE_OBJ_ALL_OP_FUNC(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL, offsetof(bool_obj_s, val), u8)
 
-DEFINE_SET_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
-DEFINE_GET_VAL_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+/*****************************************************************************
+ *                          one object operation
+ *****************************************************************************/
+DEFINE_OBJ_SET_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+DEFINE_OBJ_GET_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, offsetof(string_obj_s, val), char *)
+
+DEFINE_ONE_OBJ_NA_FUNC(logic_not, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
 
 static int test_data_get_one_obj_type_op(u8 t, u8 st, one_obj_type_op_s **type_op)
 {
@@ -100,10 +108,15 @@ static int test_data_get_one_obj_type_op(u8 t, u8 st, one_obj_type_op_s **type_o
     return EC_OBJ_TYPE_INVALID;
 }
 
-DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, sub)
-DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, mul)
-DEFINE_OBJ_OP_UNSUPPORT_FUNC(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE, div)
-static int add_val_OBJ_TYPE_STRING_NO_OBJ_SUBTYPE(void *obj1, void *obj2, void *val, u32 val_len)
+/*****************************************************************************
+ *                          two object operation
+ *****************************************************************************/
+DEFINE_TWO_OBJ_NA_FUNC(sub, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
+DEFINE_TWO_OBJ_NA_FUNC(mul, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
+DEFINE_TWO_OBJ_NA_FUNC(div, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
+DEFINE_TWO_OBJ_NA_FUNC(logic_and, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
+DEFINE_TWO_OBJ_NA_FUNC(logic_or, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
+static int OBJ_FUNC_NAME(add, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
 {
     int ret;
     ret = libstr_strcpy_s((char *)val, val_len, ((string_obj_s *)obj1)->val);
@@ -114,6 +127,42 @@ static int add_val_OBJ_TYPE_STRING_NO_OBJ_SUBTYPE(void *obj1, void *obj2, void *
     if (ret != EC_OK) {
         return ret;
     }
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(eq, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) != 0;
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(ne, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) == 0;
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(ge, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) >= 0;
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(gt, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) > 0;
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(le, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) <= 0;
+    return EC_OK;
+}
+
+static int OBJ_FUNC_NAME(lt, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
+{
+    *(bool *)val = libstr_strcmp(((string_obj_s *)obj1)->val, ((string_obj_s *)obj2)->val) < 0;
     return EC_OK;
 }
 
@@ -163,14 +212,7 @@ static int test_data_one_obj_op_proc(obj_op_info_s *info)
         return ret;
     }
 
-    switch (info->op) {
-        case OBJ_OP_SET_VAL:
-            return type_op->set_val(obj_attr, info->ret_val);
-        case OBJ_OP_GET_VAL:
-            return type_op->get_val(info->ret_val, obj_attr);
-        default:
-            return EC_UNSUPPORT_OP;
-    }
+    return type_op->op[info->op](obj_attr, info->ret_val);
 }
 
 static int test_data_two_obj_op_proc(obj_op_info_s *info)
@@ -210,34 +252,18 @@ static int test_data_two_obj_op_proc(obj_op_info_s *info)
         return ret;
     }
 
-    switch (info->op) {
-        case OBJ_OP_ADD_VAL:
-            return type_op->add_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
-        case OBJ_OP_SUB_VAL:
-            return type_op->sub_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
-        case OBJ_OP_MUL_VAL:
-            return type_op->mul_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
-        case OBJ_OP_DIV_VAL:
-            return type_op->div_val(obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
-        default:
-            return EC_UNSUPPORT_OP;
-    }
+    return type_op->op[info->op - ONE_OBJ_OP_MAX](obj1_attr, obj2_attr, info->ret_val, info->ret_val_len);
 }
 
 int test_data_obj_op_proc(obj_op_info_s *info)
 {
-    switch (info->op) {
-        case OBJ_OP_SET_VAL:
-        case OBJ_OP_GET_VAL:
-            return test_data_one_obj_op_proc(info);
-        case OBJ_OP_ADD_VAL:
-        case OBJ_OP_SUB_VAL:
-        case OBJ_OP_MUL_VAL:
-        case OBJ_OP_DIV_VAL:
-            return test_data_two_obj_op_proc(info);
-        default:
-            core_log("[test_data] type_op[%u] unsupport\n", info->op);
-            return EC_UNSUPPORT_OP;
+    if (info->op < ONE_OBJ_OP_MAX) {
+        return test_data_one_obj_op_proc(info);
+    } else if (info->op < TWO_OBJ_OP_MAX) {
+        return test_data_two_obj_op_proc(info);
+    } else {
+        core_log("[test_data] type_op[%u] unsupport\n", info->op);
+        return EC_UNSUPPORT_OP;
     }
 }
 
