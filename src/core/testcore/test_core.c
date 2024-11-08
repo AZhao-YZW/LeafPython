@@ -127,6 +127,12 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
 
 static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 {
+    static u8 calc_obj_op_map[] = {
+        [CALC_OP_ADD] = OBJ_OP_ADD,
+        [CALC_OP_SUB] = OBJ_OP_SUB,
+        [CALC_OP_MUL] = OBJ_OP_MUL,
+        [CALC_OP_DIV] = OBJ_OP_DIV
+    };
     test_core_op_CALC *op_calc = &op_info->info.op_calc;
     test_core_res_CALC *res_calc = &op_info->result.res_calc;
     obj_op_info_s info = {
@@ -144,18 +150,13 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     };
     int ret;
 
-    switch (op_calc->op) {
-        case CALC_OP_ADD:
-            info.op = OBJ_OP_ADD;
-            ret = test_data_obj_op_proc(&info);
-            break;
-        case CALC_OP_SUB:
-        case CALC_OP_MUL:
-        case CALC_OP_DIV:
-        default:
-            core_log("[test_core] CALC unsupport op[%d]\n", op_calc->op);
-            return EC_UNSUPPORT_OP;
+    if (info.op >= CALC_OP_NUM) {
+        core_log("[test_core] CALC unsupport op[%d]\n", op_calc->op);
+        return EC_UNSUPPORT_OP;
     }
+
+    info.op = calc_obj_op_map[op_calc->op];
+    ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
         core_log("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
             op_calc->op, op_calc->obj1_id, op_calc->obj2_id, ret);
@@ -164,7 +165,55 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     return EC_OK;
 }
 
-static int test_core_proc_PRINT(test_core_op_info_s *op_info, test_core_s *core)
+static int test_core_proc_LOGIC(test_core_op_info_s *op_info, test_core_s *core)
+{
+    static u8 logic_obj_op_map[] = { 
+        [LOGIC_OP_LOGIC_NOT] = OBJ_OP_LOGIC_NOT,
+        [LOGIC_OP_EQ]        = OBJ_OP_EQ,
+        [LOGIC_OP_NE]        = OBJ_OP_NE,
+        [LOGIC_OP_GE]        = OBJ_OP_GE,
+        [LOGIC_OP_GT]        = OBJ_OP_GT,
+        [LOGIC_OP_LE]        = OBJ_OP_LE,
+        [LOGIC_OP_LT]        = OBJ_OP_LT,
+        [LOGIC_OP_LOGIC_AND] = OBJ_OP_LOGIC_AND,
+        [LOGIC_OP_LOGIC_OR]  = OBJ_OP_LOGIC_OR
+    };
+    test_core_op_LOGIC *op_logic = &op_info->info.op_logic;
+    test_core_res_LOGIC *res_logic = &op_info->result.res_logic;
+    obj_op_info_s info = {
+        .ret_val_len = op_logic->val_len,
+        .ret_val = &res_logic->ret_bool,
+        .global_obj = core->global_obj,
+    };
+    int ret;
+
+    if (info.op >= LOGIC_OP_NUM) {
+        core_log("[test_core] LOGIC unsupport op[%d]\n", op_logic->op);
+        return EC_UNSUPPORT_OP;
+    }
+    info.op = logic_obj_op_map[op_logic->op];
+    if (info.op < ONE_LOGIC_OP_MAX) {
+        info.one_obj.obj_type = op_logic->obj1_type;
+        info.one_obj.obj_subtype = op_logic->obj1_subtype;
+        info.one_obj.obj_id = op_logic->obj1_id;
+    } else {
+        info.two_obj.obj1_type = op_logic->obj1_type;
+        info.two_obj.obj1_subtype = op_logic->obj1_subtype;
+        info.two_obj.obj1_id = op_logic->obj1_id;
+        info.two_obj.obj2_type = op_logic->obj2_type;
+        info.two_obj.obj2_subtype = op_logic->obj2_subtype;
+        info.two_obj.obj2_id = op_logic->obj2_id;
+    }
+
+    ret = test_data_obj_op_proc(&info);
+    if (ret != EC_OK) {
+        core_log("[test_core] LOGIC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
+            op_logic->op, op_logic->obj1_id, op_logic->obj2_id, ret);
+    }
+    return EC_OK;
+}
+
+static int test_core_proc_REG(test_core_op_info_s *op_info, test_core_s *core)
 {
     return EC_OK;
 }
@@ -184,20 +233,23 @@ struct {
     { TEST_CORE_OP_SET, test_core_proc_SET },
     { TEST_CORE_OP_GET, test_core_proc_GET },
     { TEST_CORE_OP_CALC, test_core_proc_CALC },
-    { TEST_CORE_OP_PRINT, test_core_proc_PRINT },
+    { TEST_CORE_OP_LOGIC, test_core_proc_LOGIC },
+    { TEST_CORE_OP_REG, test_core_proc_REG },
     { TEST_CORE_OP_CALL, test_core_proc_CALL },
 };
 
+#define BUILD_CHECK_CORE_OP_MAP_SIZE() BUILD_BUG_ON(ARRAY_SIZE(g_test_core_op_map) != TEST_CORE_OP_NUM)
+
 static int test_core_run_op_proc(test_core_op_info_s *op_info, test_core_s *core)
 {
-    int i;
-    for (i = 0; i < ARRAY_SIZE(g_test_core_op_map); i++) {
-        if (g_test_core_op_map[i].op == op_info->op) {
-            return g_test_core_op_map[i].proc(op_info, core);
-        }
+    BUILD_CHECK_CORE_OP_MAP_SIZE();
+
+    if (op_info->op < TEST_CORE_OP_NUM) {
+        return g_test_core_op_map[op_info->op].proc(op_info, core);
+    } else {
+        core_log("[test_core] op[%u] is unsupported\n", op_info->op);
+        return EC_UNSUPPORT_OP;
     }
-    core_log("[test_core] op[%u] is unsupported\n", op_info->op);
-    return EC_UNSUPPORT_OP;
 }
 
 static struct list_head g_core_list;
@@ -225,11 +277,6 @@ int test_core_run(u8 core_id, test_core_op_info_s *op_info)
     return EC_CORE_ID_INVALID;
 }
 
-static int test_core_builtin_func_init(builtin_func_s *builtin_func)
-{
-    return EC_OK;
-}
-
 int test_core_init(u8 core_id)
 {
     int ret;
@@ -247,14 +294,6 @@ int test_core_init(u8 core_id)
     ret = test_data_init(&core->global_obj);
     if (ret != EC_OK) {
         core_log("[test_core] init global_obj failed, core_id[%u]\n", core->core_id);
-        mm_free(core);
-        return ret;
-    }
-
-    ret = test_core_builtin_func_init(core->builtin_func);
-    if (ret != EC_OK) {
-        core_log("[test_core] init builtin_func failed, core_id[%u]\n", core->core_id);
-        test_data_free(&core->global_obj);
         mm_free(core);
         return ret;
     }
