@@ -253,6 +253,9 @@ static int op##_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
     DEFINE_OBJ_LOGIC_AND_FUNC(t, st, loc, vt) \
     DEFINE_OBJ_LOGIC_OR_FUNC(t, st, loc, vt)
 
+/*****************************************************************************
+ *                           object structures
+ *****************************************************************************/
 /**
  * Global Object
  * |-- Root Object
@@ -281,6 +284,19 @@ typedef struct {
 #define MAX_TEST_DATA_OBJ_ATTR_SIZE 40
 #define BUILD_CHECK_OBJ_ATTR_SIZE() BUILD_BUG_ON(sizeof(obj_base_attr_s) > MAX_TEST_DATA_OBJ_ATTR_SIZE)
 
+/**
+ * @brief Object C Funcion Attribute
+ * @note All object has this attribute, and this attribute 
+ *       only represents C functions registered to the core,
+ *       Python functions deal in vm. it MUST be the second
+ *       field of object type struct
+ */
+typedef struct {
+    struct list_head node;
+    u32 cfunc_id;
+    void *cfunc;
+} obj_cfunc_attr_s;
+
 /* Global Object */
 typedef struct {
     obj_base_attr_s obj_attr;
@@ -293,11 +309,13 @@ typedef struct {
 /* Root Object */
 typedef struct {
     obj_base_attr_s obj_attr;
+    obj_cfunc_attr_s cfunc_attr;
 } root_obj_s;
 
 /* Base Object */
 typedef struct {
     obj_base_attr_s obj_attr;
+    obj_cfunc_attr_s cfunc_attr;
 } object_obj_s;
 
 /* Number Object */
