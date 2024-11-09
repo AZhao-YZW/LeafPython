@@ -397,6 +397,29 @@ int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj
     *obj_id = obj_attr->obj_id;
     return EC_OK;
 }
+
+int test_data_obj_get_name_by_id(u32 obj_id, u8 obj_name_len, global_obj_s *global_obj, char **obj_name)
+{
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, global_obj);
+    if (obj_attr == NULL) {
+        core_log("[test_data] find obj_id[%u] failed\n", obj_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+    libstr_strcpy_s(*obj_name, obj_name_len, obj_attr->obj_name);
+    return EC_OK;
+}
+
+int test_data_obj_get_name_len_by_id(u32 obj_id, global_obj_s *global_obj, u8 *obj_name_len)
+{
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, global_obj);
+    if (obj_attr == NULL) {
+        core_log("[test_data] find obj_id[%u] failed\n", obj_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+    *obj_name_len = libstr_strlen(obj_attr->obj_name);
+    return EC_OK;
+}
+
 int test_data_init(global_obj_s **global_obj)
 {
     static char global_obj_name[] = GLOBAL_OBJ_NAME;

@@ -125,6 +125,100 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
     return EC_OK;
 }
 
+static int test_core_proc_CVT(test_core_op_info_s *op_info, test_core_s *core)
+{
+    test_core_op_CVT *op_cvt = &op_info->info.op_cvt;
+    test_core_res_CVT *res_cvt = &op_info->result.res_cvt;
+    test_core_op_info_s tmp_info;
+    union {
+        s64 int_val;
+        f64 float_val;
+    } res_val = {0};
+    u8 tgt_name_len = 0;
+    char *tgt_name = NULL;
+    u32 tgt_id = 0;
+    int ret = EC_OK;
+
+    if (op_cvt->tgt_type == op_cvt->cur_type) {
+        goto out;
+    }
+
+    if (op_cvt->tgt_type != OBJ_TYPE_NUMBER) {
+        ret = EC_MAY_SUPPORT_LATER;
+    }
+
+    // GET
+    tmp_info.op = TEST_CORE_OP_GET;
+    tmp_info.info.op_get.obj_type = op_cvt->cur_type;
+    tmp_info.info.op_get.obj_subtype = op_cvt->cur_subtype;
+    tmp_info.info.op_get.obj_id = op_cvt->cur_obj_id;
+    tmp_info.result.res_get.obj_val = &res_val;
+    ret = test_core_proc_GET(&tmp_info, core);
+    if (ret != EC_OK) {
+        goto out;
+    }
+    // get target obj name and name len
+    ret = test_data_obj_get_name_len_by_id(op_cvt->cur_obj_id, core->global_obj, &tgt_name_len);
+    if (ret != EC_OK) {
+        goto out;
+    }
+    tgt_name = mm_malloc(tgt_name_len);
+    if (tgt_name == NULL) {
+        ret = EC_ALLOC_FAILED;
+        goto out;  // free is not needed
+    }
+    ret = test_data_obj_get_name_by_id(op_cvt->cur_obj_id, tgt_name_len, core->global_obj, &tgt_name);
+    if (ret != EC_OK) {
+        goto out;
+    }
+    // FIND
+    tmp_info.op = TEST_CORE_OP_FIND;
+    tmp_info.info.op_find.obj_name = tgt_name;
+    tmp_info.info.op_find.parent_id = op_cvt->tgt_parent_id;
+    ret = test_core_proc_FIND(&tmp_info, core);
+    if (ret != EC_OK) {
+        goto out;
+    }
+    tgt_id = tmp_info.result.res_find.obj_id;
+    // NEW
+    tmp_info.op = TEST_CORE_OP_NEW;
+    tmp_info.info.op_new.obj_type = op_cvt->tgt_type;
+    tmp_info.info.op_new.obj_subtype = op_cvt->tgt_subtype;
+    tmp_info.info.op_new.obj_name_len = 0;  // promise obj_name_len is legal
+    tmp_info.info.op_new.parent_id = op_cvt->tgt_parent_id;
+    tmp_info.info.op_new.obj_name = tgt_name;
+    ret = test_core_proc_NEW(&tmp_info, core);
+    if (ret != EC_OK) {
+        goto out;
+    }
+    // SET
+    tmp_info.op = TEST_CORE_OP_SET;
+    tmp_info.info.op_set.obj_type = op_cvt->tgt_type;
+    tmp_info.info.op_set.obj_subtype = op_cvt->tgt_subtype;
+    tmp_info.info.op_set.obj_id = tgt_id;
+    switch (op_cvt->tgt_subtype) {
+        case NUM_TYPE_INT:
+            res_val.int_val = (s64)res_val.float_val;
+            break;
+        case NUM_TYPE_FLOAT:
+            res_val.float_val = (f64)res_val.int_val;
+            break;
+        default:
+            ret = EC_PARAM_INVALID;
+            goto out;
+    }
+    tmp_info.info.op_set.obj_val = &res_val;
+    ret = test_core_proc_SET(&tmp_info, core);
+    if (ret != EC_OK) {
+        goto out;
+    }
+out:
+    if (ret != EC_OK) {
+        core_log("[test_core] CVT obj_id[%u] failed, ret[%d]\n", op_cvt->cur_obj_id, ret);
+    }
+    return ret;
+}
+
 static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
 {
     static u8 calc_obj_op_map[] = {
@@ -232,6 +326,7 @@ struct {
     { TEST_CORE_OP_FIND, test_core_proc_FIND },
     { TEST_CORE_OP_SET, test_core_proc_SET },
     { TEST_CORE_OP_GET, test_core_proc_GET },
+    { TEST_CORE_OP_CVT, test_core_proc_GET },
     { TEST_CORE_OP_CALC, test_core_proc_CALC },
     { TEST_CORE_OP_LOGIC, test_core_proc_LOGIC },
     { TEST_CORE_OP_REG, test_core_proc_REG },

@@ -427,6 +427,8 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
 int test_data_obj_del(u32 obj_id, global_obj_s *global_obj);
 int test_data_obj_get_id_by_name(const char *obj_name, u32 parent_id, global_obj_s *global_obj,
                                  u32 *obj_id);
+int test_data_obj_get_name_by_id(u32 obj_id, u8 obj_name_len, global_obj_s *global_obj, char **obj_name);
+int test_data_obj_get_name_len_by_id(u32 obj_id, global_obj_s *global_obj, u8 *obj_name_len);
 
 void test_data_print_obj_list(global_obj_s *global_obj);
 

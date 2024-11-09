@@ -36,6 +36,7 @@ enum test_core_op_e {
     TEST_CORE_OP_FIND,
     TEST_CORE_OP_SET,
     TEST_CORE_OP_GET,
+    TEST_CORE_OP_CVT,
     TEST_CORE_OP_CALC,
     TEST_CORE_OP_LOGIC,
     TEST_CORE_OP_REG,
@@ -72,6 +73,19 @@ typedef struct {
 typedef struct {
     void *obj_val;
 } test_core_res_GET;
+
+typedef struct {
+    u8 cur_type;
+    u8 cur_subtype;
+    u8 tgt_type;
+    u8 tgt_subtype;
+    u32 cur_obj_id;
+    u32 tgt_parent_id;
+} test_core_op_CVT;
+
+typedef struct {
+    void *obj;
+} test_core_res_CVT;
 
 typedef struct {
     u32 parent_id;
@@ -145,6 +159,7 @@ typedef struct {
         test_core_op_DEL op_del;
         test_core_op_SET op_set;
         test_core_op_GET op_get;
+        test_core_op_CVT op_cvt;
         test_core_op_FIND op_find;
         test_core_op_CALC op_calc;
         test_core_op_LOGIC op_logic;
@@ -152,6 +167,7 @@ typedef struct {
     union {
         u64 val;    /* support 8 bytes result data */
         test_core_res_GET res_get;
+        test_core_res_CVT res_cvt;
         test_core_res_FIND res_find;
         test_core_res_CALC res_calc;
         test_core_res_LOGIC res_logic;
