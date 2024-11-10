@@ -63,7 +63,7 @@ int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *res
         line_len = test_parser_get_line_len(code, code_len, offset);
         // line to frame
         bc_num = test_parser_get_frame_bc_num(line, line_len);
-        frame = test_frame_init(bc_num);
+        frame = test_frame_create(bc_num);
         if (frame == NULL) {
             core_log("[ctrl] test_frame init failed\n");
             return EC_ALLOC_FAILED;
@@ -82,29 +82,6 @@ int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *res
 
 int ctrl_testcore_run_bytecode(u8 core_id, const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
 {
-    int ret;
-    test_frame_s *frame = test_frame_init(1);
-    if (frame == NULL) {
-        core_log("[ctrl] test_frame init failed\n");
-        return EC_ALLOC_FAILED;
-    }
-
-    ret = test_parser_bc_gen_frame(bytecode, bytecode_len, frame);
-    if (ret != EC_OK) {
-        core_log("[ctrl] test_parser bc gen frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
-
-    ret = test_vm_run_frame(core_id, frame);
-    if (ret != EC_OK) {
-        core_log("[ctrl] test_vm run bc frame failed, ret[%d]\n", ret);
-        mm_free(frame->bc_list);
-        mm_free(frame);
-        return ret;
-    }
-
     return EC_OK;
 }
 

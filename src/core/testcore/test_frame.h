@@ -28,15 +28,46 @@ extern "C" {
 #endif
 
 #include "type.h"
+#include "list.h"
 #include "test_bc.h"
 
+enum frame_queue_e {
+    TEST_FRAME_QUEUE_0
+};
+
 typedef struct {
-    test_bc_s *bc_list;
+    struct list_head node;
     u32 bc_num;
     u32 idx;
+    test_bc_s *bc_list;
 } test_frame_s;
 
-test_frame_s *test_frame_init(u32 bc_num);
+typedef struct {
+    int (*run_frame)(u8 core_id, test_frame_s *frame);
+} test_frame_callback_s;
+
+typedef struct {
+    struct list_head mng_node;
+    struct list_head frame_node_head;
+    u8 frame_queue_id;
+    u8 core_id;
+    test_frame_callback_s cb;
+} test_frame_mng_s;
+
+/**
+ * the workflow is:
+ *   1. create a frame by test_frame_create()
+ *   2. enqueue the frame by test_frame_enqueue()
+ *   3. dequeue the frame after enqueue (and now it's immediately)
+ *   4. run the frame by run_frame() which was registered from vm
+ *   5. free the frame by test_frame_free() after run_frame()
+ */
+int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb);
+test_frame_s *test_frame_create(u32 bc_num);
+int test_frame_enqueue(u8 frame_queue_id, test_frame_s *frame);
+
+/* free all frames and queues */
+void test_frame_free(void);
 
 #ifdef __cplusplus
 }

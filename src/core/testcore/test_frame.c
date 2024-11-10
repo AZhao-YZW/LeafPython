@@ -23,10 +23,11 @@
  */
 #include "test_frame.h"
 #include "mm.h"
+#include "error_code.h"
 #include "log.h"
 #include "test_bc.h"
 
-test_frame_s *test_frame_init(u32 bc_num)
+test_frame_s *test_frame_create(u32 bc_num)
 {
     test_frame_s *frame = mm_malloc(sizeof(test_frame_s));
     int bc_list_size;
@@ -48,4 +49,71 @@ test_frame_s *test_frame_init(u32 bc_num)
     frame->bc_num = bc_num;
     frame->idx = 0;
     return frame;
+}
+
+static LIST_HEAD(g_frame_mng_list);
+
+static int test_frame_dequeue(test_frame_mng_s *frame_mng)
+{
+    test_frame_s *frame = NULL;
+    int ret;
+
+    if (list_empty(&frame_mng->frame_node_head)) {
+        core_log("[test_frame] frame queue is empty, frame_queue_id[%u]\n");
+        return EC_PARAM_INVALID;
+    }
+
+    list_for_each_entry(frame, &frame_mng->frame_node_head, node) {
+        ret = frame_mng->cb.run_frame(frame_mng->core_id, frame);
+        list_del(&frame->node);
+        mm_free(frame);
+        if (ret != EC_OK) {
+            core_log("[test_frame] run frame failed, frame_queue_id[%u] ret[%d]\n",
+                frame_mng->frame_queue_id, ret);
+            return ret;
+        }
+    }
+    return EC_OK;
+}
+
+int test_frame_enqueue(u8 frame_queue_id, test_frame_s *frame)
+{
+    test_frame_mng_s *frame_mng = NULL;
+    int ret;
+
+    if (frame == NULL) {
+        return EC_PARAM_INVALID;
+    }
+    list_for_each_entry(frame_mng, &g_frame_mng_list, mng_node) {
+        if (frame_mng->frame_queue_id == frame_queue_id) {
+            list_add_tail(&frame->node, &frame_mng->frame_node_head);
+            ret = test_frame_dequeue(frame_mng);
+            if (ret != EC_OK) {
+                return ret;
+            }
+            return EC_OK;
+        }
+    }
+    core_log("[test_frame] enqueue frame_queue_id[%u] not found\n", frame_queue_id);
+    return EC_CORE_ID_INVALID;
+}
+
+int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb)
+{
+    test_frame_mng_s *frame_mng = mm_malloc(sizeof(test_frame_mng_s));
+    if (frame_mng == NULL) {
+        core_log("[test_frame] alloc frame_mng failed\n");
+        return EC_ALLOC_FAILED;
+    }
+    frame_mng->frame_queue_id = frame_queue_id;
+    frame_mng->core_id = core_id;
+    frame_mng->cb = *cb;
+    INIT_LIST_HEAD(&frame_mng->frame_node_head);
+    list_add_tail(&frame_mng->mng_node, &g_frame_mng_list);
+    return EC_OK;
+}
+
+void test_frame_free(void)
+{
+    return;
 }
