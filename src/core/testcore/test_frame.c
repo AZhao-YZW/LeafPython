@@ -29,11 +29,17 @@
 
 test_frame_s *test_frame_create(u32 bc_num)
 {
-    test_frame_s *frame = mm_malloc(sizeof(test_frame_s));
+    test_frame_s *frame = NULL;
     int bc_list_size;
 
-    if (frame == NULL) {
-        core_log("[test_frame] init alloc frame failed\n");
+    if (bc_num == 0) {
+        core_log("[test_frame] bc_num is 0\n");
+        return NULL;
+    }
+
+    frame = mm_malloc(sizeof(test_frame_s));
+    if (frame == NULL || bc_num == 0) {
+        core_log("[test_frame] alloc frame failed\n");
         return NULL;
     }
     mm_memset_s(frame, sizeof(*frame), 0, sizeof(*frame));
@@ -41,7 +47,7 @@ test_frame_s *test_frame_create(u32 bc_num)
     bc_list_size = bc_num * sizeof(test_bc_s);
     frame->bc_list = mm_malloc(bc_list_size);
     if (frame->bc_list == NULL) {
-        core_log("[test_frame] init alloc bc list failed\n");
+        core_log("[test_frame] alloc bc list failed\n");
         mm_free(frame);
         return NULL;
     }

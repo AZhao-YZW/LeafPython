@@ -48,6 +48,11 @@ static int leafpy_strcpy_s(char *dst, u32 bytes, const char *src)
     return strcpy_s(dst, bytes, src);
 }
 
+static char *leafpy_strchr(const char *str, int val)
+{
+    return strchr(str, val);
+}
+
 #else
 #error "unsupported platform"
 #endif
@@ -78,4 +83,9 @@ int libstr_strcpy_s(char *dst, u32 bytes, const char *src)
         core_log("leafpy_strcpy_s failed, ret[%d]\n", ret);
         return EC_STRING_OPTION_FAILED;
     }
+}
+
+char *libstr_strchr(const char *str, int val)
+{
+    return leafpy_strchr(str, val);
 }

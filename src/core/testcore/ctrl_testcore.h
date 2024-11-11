@@ -31,7 +31,7 @@ extern "C" {
 
 int ctrl_testcore_init(u8 core_id);
 int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *result, u32 result_len);
-int ctrl_testcore_run_bytecode(u8 core_id, const char *bytecode, u32 bytecode_len, char *result, u32 result_len);
+int ctrl_testcore_run_bytecode(u8 core_id, const char *bc, u32 bc_len, char *result, u32 result_len);
 int ctrl_testcore_add_core(u8 core_id);
 
 #ifdef __cplusplus

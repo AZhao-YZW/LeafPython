@@ -29,7 +29,6 @@
 #include "test_parser.h"
 #include "test_vm.h"
 #include "test_core.h"
-#include "test_frame.h"
 
 int ctrl_testcore_init(u8 core_id)
 {
@@ -51,36 +50,16 @@ int ctrl_testcore_init(u8 core_id)
 
 int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *result, u32 result_len)
 {
-    char *line = (char *)code;
-    test_frame_s *frame = NULL;
-    u32 offset = 0, line_len = 0, bc_num;
     int ret;
-
-    while (offset < code_len) {
-        // code to line
-        line += line_len;
-        offset += line_len;
-        line_len = test_parser_get_line_len(code, code_len, offset);
-        // line to frame
-        bc_num = test_parser_get_frame_bc_num(line, line_len);
-        frame = test_frame_create(bc_num);
-        if (frame == NULL) {
-            core_log("[ctrl] test_frame init failed\n");
-            return EC_ALLOC_FAILED;
-        }
-        // run frame
-        ret = test_vm_run_frame(core_id, frame);
-        if (ret != EC_OK) {
-            core_log("[ctrl] test_vm run code frame failed, ret[%d]\n", ret);
-            mm_free(frame->bc_list);
-            mm_free(frame);
-            return ret;
-        }
+    ret = test_parser_parse_code(code, code_len);
+    if (ret != EC_OK) {
+        core_log("[ctrl] test_parser parse failed, ret[%d]\n", ret);
+        return ret;
     }
     return EC_OK;
 }
 
-int ctrl_testcore_run_bytecode(u8 core_id, const char *bytecode, u32 bytecode_len, char *result, u32 result_len)
+int ctrl_testcore_run_bytecode(u8 core_id, const char *bc, u32 bc_len, char *result, u32 result_len)
 {
     return EC_OK;
 }

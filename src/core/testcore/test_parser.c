@@ -23,6 +23,8 @@
  */
 #include "test_parser.h"
 #include "error_code.h"
+#include "log.h"
+#include "libstr.h"
 #include "test_frame.h"
 
 char *g_py_keywords[] = {
@@ -48,22 +50,80 @@ char *g_py_delimiters[] = {
     "@=", "&=", "|=", "^=", ">>=", "<<=", "**="
 };
 
-int test_parser_bc_gen_frame(const char *bytecode, u32 bytecode_len, test_frame_s *frame)
+static u8 test_parser_get_bc_num(const char *code, u32 code_len)
 {
+    return 0;
+}
+
+static int test_parser_parse_line(char *line, u32 line_len, u32 *bc_num)
+{
+    *bc_num += 1;
     return EC_OK;
 }
 
-u32 test_parser_get_frame_bc_num(const char *line, u32 line_len)
+static int test_parser_parse_frame(char *frame_start, char *frame_end, u32 *bc_num)
 {
-    return 1;
-}
+    char *line = frame_start;
+    char *line_end;
+    u32 line_len;
+    int ret;
 
-int test_parser_line_to_frame(const char *line, u32 line_len, test_frame_s *frame)
-{
+    while (line < frame_end) {
+        line_end = libstr_strchr(line, '\n');
+        if (line_end == NULL) {
+            line_end = frame_end;
+        }
+        line_len = line_end - line;
+        ret = test_parser_parse_line(line, line_len, bc_num);
+        if (ret != EC_OK) {
+            core_log("[test_parser] parse line failed, line: %s\n", line);
+            return ret;
+        }
+        line = line_end;
+    }
     return EC_OK;
 }
 
-u32 test_parser_get_line_len(const char *code, u32 code_len, u32 offset)
+static char *test_parser_get_frame_end(char *frame_start, u32 remain_len)
 {
-    return 10;
+    return NULL;
+}
+
+int test_parser_parse_code(const char *code, u32 code_len)
+{
+    const char *code_end = code + code_len;
+    char *frame_start = (char *)code;
+    char *frame_end;
+    u32 bc_num = 0;
+    test_frame_s *frame = NULL;
+    int ret;
+
+    if (code == NULL) {
+        core_log("[test_parser] code is NULL\n");
+        return EC_PARAM_INVALID;
+    }
+
+    while (frame_start < code_end) {
+        frame_end = test_parser_get_frame_end(frame_start, code - frame_start);
+        if (frame_end == NULL) {
+            frame_end =(char *) code_end;
+        }
+        ret = test_parser_parse_frame(frame_start, frame_end, &bc_num);
+        if (ret != EC_OK) {
+            core_log("[test_parser] parse frame failed\n");
+            return ret;
+        }
+        frame = test_frame_create(bc_num);
+        if (frame == NULL) {
+            core_log("[test_parser] create frame failed\n");
+            return EC_FRAME_CREATE_FAILED;
+        }
+        ret = test_frame_enqueue(TEST_FRAME_QUEUE_0, frame);
+        if (ret != EC_OK) {
+            core_log("[test_parser] enqueue frame failed\n");
+            return ret;
+        }
+        frame_start = frame_end;
+    }
+    return EC_OK;
 }

@@ -46,6 +46,7 @@ enum error_code_e {
     EC_OBJ_NAME_LEN_EXCEED      = 13,
     EC_STRING_OPTION_FAILED     = 14,
     EC_MAY_SUPPORT_LATER        = 15,
+    EC_FRAME_CREATE_FAILED      = 16,
     EC_MAX                      = 0xFFFF
 };
 
