@@ -47,6 +47,7 @@ enum error_code_e {
     EC_STRING_OPTION_FAILED     = 14,
     EC_MAY_SUPPORT_LATER        = 15,
     EC_FRAME_CREATE_FAILED      = 16,
+    EC_FRAME_Q_ID_INVALID       = 17,
     EC_MAX                      = 0xFFFF
 };
 

@@ -32,7 +32,8 @@ extern "C" {
 #include "test_bc.h"
 
 enum frame_queue_e {
-    TEST_FRAME_QUEUE_0
+    TEST_FRAME_QUEUE_0,
+    TEST_FRAME_QUEUE_1,
 };
 
 typedef struct {
@@ -60,14 +61,14 @@ typedef struct {
  *   2. enqueue the frame by test_frame_enqueue()
  *   3. dequeue the frame after enqueue (and now it's immediately)
  *   4. run the frame by run_frame() which was registered from vm
- *   5. free the frame by test_frame_free() after run_frame()
+ *   5. free the frame after run_frame()
  */
 int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb);
 test_frame_s *test_frame_create(u32 bc_num);
 int test_frame_enqueue(u8 frame_queue_id, test_frame_s *frame);
 
 /* free all frames and queues */
-void test_frame_free(void);
+void test_frame_free_all(void);
 
 #ifdef __cplusplus
 }

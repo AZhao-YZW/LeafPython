@@ -52,7 +52,7 @@ static int test_vm_run_bc_list(test_vm_s *vm, test_frame_s *frame)
     return EC_OK;
 }
 
-static struct list_head g_vm_list;
+static LIST_HEAD(g_vm_list);
 
 int test_vm_run_frame(u8 core_id, test_frame_s *frame)
 {
@@ -67,7 +67,7 @@ int test_vm_run_frame(u8 core_id, test_frame_s *frame)
     return EC_CORE_ID_INVALID;
 }
 
-int test_vm_init(u8 core_id)
+int test_vm_init(u8 core_id, u8 frame_q_id)
 {
     test_frame_callback_s frame_cb = {
         .run_frame = test_vm_run_frame,
@@ -81,11 +81,29 @@ int test_vm_init(u8 core_id)
         return EC_ALLOC_FAILED;
     }
     vm->core_id = core_id;
-    INIT_LIST_HEAD(&g_vm_list);
     list_add_tail(&vm->node, &g_vm_list);
-    ret = test_frame_register(TEST_FRAME_QUEUE_0, core_id, &frame_cb);
+    ret = test_frame_register(frame_q_id, core_id, &frame_cb);
     if (ret != EC_OK) {
         core_log("[test_vm] init register frame failed, core_id[%u]\n", core_id);
+        return ret;
+    }
+    return EC_OK;
+}
+
+int test_vm_add(u8 core_id, u8 frame_q_id)
+{
+    test_vm_s *vm = NULL;
+    int ret;
+
+    list_for_each_entry(vm, &g_vm_list, node) {
+        if (vm->core_id == core_id) {
+            core_log("[test_vm] add core_id[%u] failed, already exist\n", core_id);
+            return EC_CORE_ID_INVALID;
+        }
+    }
+    ret = test_vm_init(core_id, frame_q_id);
+    if (ret != EC_OK) {
+        core_log("[test_vm] add core_id[%u] failed, ret[%d]\n", core_id, ret);
         return ret;
     }
     return EC_OK;
@@ -94,7 +112,8 @@ int test_vm_init(u8 core_id)
 int test_vm_free(u8 core_id)
 {
     test_vm_s *vm = NULL;
-    list_for_each_entry(vm, &g_vm_list, node) {
+    test_vm_s *next = NULL;
+    list_for_each_entry_safe(vm, next, &g_vm_list, node) {
         if (vm->core_id == core_id) {
             list_del(&vm->node);
             mm_free(vm);
@@ -105,21 +124,12 @@ int test_vm_free(u8 core_id)
     return EC_CORE_ID_INVALID;
 }
 
-int test_vm_add(u8 core_id)
+void test_vm_free_all(void)
 {
     test_vm_s *vm = NULL;
-    list_for_each_entry(vm, &g_vm_list, node) {
-        if (vm->core_id == core_id) {
-            core_log("[test_vm] add core_id[%d] failed, already exist\n", core_id);
-            return EC_CORE_ID_INVALID;
-        }
+    test_vm_s *next = NULL;
+    list_for_each_entry_safe(vm, next, &g_vm_list, node) {
+        list_del(&vm->node);
+        mm_free(vm);
     }
-    vm = mm_malloc(sizeof(test_vm_s));
-    if (vm == NULL) {
-        core_log("[test_vm] add core_id[%d] failed, alloc vm failed\n", core_id);
-        return EC_ALLOC_FAILED;
-    }
-    vm->core_id = core_id;
-    list_add_tail(&vm->node, &g_vm_list);
-    return EC_OK;
 }

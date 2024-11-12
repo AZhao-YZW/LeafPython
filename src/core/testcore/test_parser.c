@@ -89,7 +89,7 @@ static char *test_parser_get_frame_end(char *frame_start, u32 remain_len)
     return NULL;
 }
 
-int test_parser_parse_code(const char *code, u32 code_len)
+int test_parser_parse_code(const char *code, u32 code_len, u8 frame_q_id)
 {
     const char *code_end = code + code_len;
     char *frame_start = (char *)code;
@@ -118,7 +118,7 @@ int test_parser_parse_code(const char *code, u32 code_len)
             core_log("[test_parser] create frame failed\n");
             return EC_FRAME_CREATE_FAILED;
         }
-        ret = test_frame_enqueue(TEST_FRAME_QUEUE_0, frame);
+        ret = test_frame_enqueue(frame_q_id, frame);
         if (ret != EC_OK) {
             core_log("[test_parser] enqueue frame failed\n");
             return ret;

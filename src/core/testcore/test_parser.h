@@ -30,7 +30,7 @@ extern "C" {
 #include "type.h"
 #include "test_frame.h"
 
-int test_parser_parse_code(const char *code, u32 code_len);
+int test_parser_parse_code(const char *code, u32 code_len, u8 frame_q_id);
 
 #ifdef __cplusplus
 }

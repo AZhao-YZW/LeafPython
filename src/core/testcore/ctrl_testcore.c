@@ -33,7 +33,7 @@
 int ctrl_testcore_init(u8 core_id)
 {
     int ret;
-    ret = test_vm_init(core_id);
+    ret = test_vm_init(core_id, TEST_FRAME_QUEUE_0);
     if (ret != EC_OK) {
         core_log("[ctrl] test_vm init failed, ret[%d]\n", ret);
         return ret;
@@ -51,7 +51,7 @@ int ctrl_testcore_init(u8 core_id)
 int ctrl_testcore_run_code(u8 core_id, const char *code, u32 code_len, char *result, u32 result_len)
 {
     int ret;
-    ret = test_parser_parse_code(code, code_len);
+    ret = test_parser_parse_code(code, code_len, TEST_FRAME_QUEUE_0);
     if (ret != EC_OK) {
         core_log("[ctrl] test_parser parse failed, ret[%d]\n", ret);
         return ret;
@@ -67,7 +67,7 @@ int ctrl_testcore_run_bytecode(u8 core_id, const char *bc, u32 bc_len, char *res
 int ctrl_testcore_add_core(u8 core_id)
 {
     int ret;
-    ret = test_vm_add(core_id);
+    ret = test_vm_add(core_id, TEST_FRAME_QUEUE_1);
     if (ret != EC_OK) {
         core_log("[ctrl] test_vm add failed, ret[%d]\n", ret);
         goto error_exit;

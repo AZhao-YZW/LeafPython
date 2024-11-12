@@ -103,7 +103,7 @@ int test_frame_enqueue(u8 frame_queue_id, test_frame_s *frame)
         }
     }
     core_log("[test_frame] enqueue frame_queue_id[%u] not found\n", frame_queue_id);
-    return EC_CORE_ID_INVALID;
+    return EC_FRAME_Q_ID_INVALID;
 }
 
 int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb)
@@ -121,7 +121,22 @@ int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb
     return EC_OK;
 }
 
-void test_frame_free(void)
+static void test_frame_free_frame_mng(test_frame_mng_s *frame_mng)
 {
-    return;
+    test_frame_s *frame = NULL;
+    test_frame_s *next = NULL;
+    list_for_each_entry_safe(frame, next, &frame_mng->frame_head, node) {
+        list_del(&frame->node);
+        mm_free(frame);
+    }
+}
+
+void test_frame_free_all(void)
+{
+    test_frame_mng_s *frame_mng = NULL;
+    test_frame_mng_s *next = NULL;
+    list_for_each_entry_safe(frame_mng, next, &g_frame_mng_list, mng_node) {
+        list_del(&frame_mng->mng_node);
+        mm_free(frame_mng);
+    }
 }

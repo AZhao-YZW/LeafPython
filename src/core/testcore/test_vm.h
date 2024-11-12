@@ -37,10 +37,11 @@ typedef struct {
     u32 size;
 } test_vm_s;
 
-int test_vm_init(u8 core_id);
-int test_vm_free(u8 core_id);
-int test_vm_add(u8 core_id);
 int test_vm_run_frame(u8 core_id, test_frame_s *frame);
+int test_vm_init(u8 core_id, u8 frame_q_id);
+int test_vm_add(u8 core_id, u8 frame_q_id);
+int test_vm_free(u8 core_id);
+void test_vm_free_all(void);
 
 #ifdef __cplusplus
 }
