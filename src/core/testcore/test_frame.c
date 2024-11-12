@@ -62,16 +62,18 @@ static LIST_HEAD(g_frame_mng_list);
 static int test_frame_dequeue(test_frame_mng_s *frame_mng)
 {
     test_frame_s *frame = NULL;
+    test_frame_s *next = NULL;
     int ret;
 
-    if (list_empty(&frame_mng->frame_node_head)) {
-        core_log("[test_frame] frame queue is empty, frame_queue_id[%u]\n");
+    if (list_empty(&frame_mng->frame_head)) {
+        core_log("[test_frame] frame queue is empty, frame_queue_id[%u]\n", frame_mng->frame_queue_id);
         return EC_PARAM_INVALID;
     }
 
-    list_for_each_entry(frame, &frame_mng->frame_node_head, node) {
+    list_for_each_entry_safe(frame, next, &frame_mng->frame_head, node) {
         ret = frame_mng->cb.run_frame(frame_mng->core_id, frame);
         list_del(&frame->node);
+        mm_free(frame->bc_list);
         mm_free(frame);
         if (ret != EC_OK) {
             core_log("[test_frame] run frame failed, frame_queue_id[%u] ret[%d]\n",
@@ -92,7 +94,7 @@ int test_frame_enqueue(u8 frame_queue_id, test_frame_s *frame)
     }
     list_for_each_entry(frame_mng, &g_frame_mng_list, mng_node) {
         if (frame_mng->frame_queue_id == frame_queue_id) {
-            list_add_tail(&frame->node, &frame_mng->frame_node_head);
+            list_add_tail(&frame->node, &frame_mng->frame_head);
             ret = test_frame_dequeue(frame_mng);
             if (ret != EC_OK) {
                 return ret;
@@ -114,7 +116,7 @@ int test_frame_register(u8 frame_queue_id, u8 core_id, test_frame_callback_s *cb
     frame_mng->frame_queue_id = frame_queue_id;
     frame_mng->core_id = core_id;
     frame_mng->cb = *cb;
-    INIT_LIST_HEAD(&frame_mng->frame_node_head);
+    INIT_LIST_HEAD(&frame_mng->frame_head);
     list_add_tail(&frame_mng->mng_node, &g_frame_mng_list);
     return EC_OK;
 }

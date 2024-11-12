@@ -106,7 +106,7 @@ int test_parser_parse_code(const char *code, u32 code_len)
     while (frame_start < code_end) {
         frame_end = test_parser_get_frame_end(frame_start, code - frame_start);
         if (frame_end == NULL) {
-            frame_end =(char *) code_end;
+            frame_end = (char *)code_end;
         }
         ret = test_parser_parse_frame(frame_start, frame_end, &bc_num);
         if (ret != EC_OK) {

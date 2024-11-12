@@ -48,7 +48,7 @@ typedef struct {
 
 typedef struct {
     struct list_head mng_node;
-    struct list_head frame_node_head;
+    struct list_head frame_head;
     u8 frame_queue_id;
     u8 core_id;
     test_frame_callback_s cb;
