@@ -48,6 +48,8 @@ enum error_code_e {
     EC_MAY_SUPPORT_LATER        = 15,
     EC_FRAME_CREATE_FAILED      = 16,
     EC_FRAME_Q_ID_INVALID       = 17,
+    EC_PARSE_SYNTEX_ERROR       = 18,
+    EC_FRAME_COMBIND_ERROR      = 19,
     EC_MAX                      = 0xFFFF
 };
 
