@@ -252,7 +252,7 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     info.op = calc_obj_op_map[op_calc->op];
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
-        core_log("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
+        core_log("[test_core] CALC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]\n",
             op_calc->op, op_calc->obj1_id, op_calc->obj2_id, ret);
         return ret;
     }
@@ -276,7 +276,7 @@ static int test_core_proc_LOGIC(test_core_op_info_s *op_info, test_core_s *core)
     test_core_res_LOGIC *res_logic = &op_info->result.res_logic;
     obj_op_info_s info = {
         .ret_val_len = op_logic->val_len,
-        .ret_val = &res_logic->ret_bool,
+        .ret_val = res_logic->obj_val,
         .global_obj = core->global_obj,
     };
     int ret;
@@ -286,7 +286,7 @@ static int test_core_proc_LOGIC(test_core_op_info_s *op_info, test_core_s *core)
         return EC_UNSUPPORT_OP;
     }
     info.op = logic_obj_op_map[op_logic->op];
-    if (info.op < ONE_LOGIC_OP_MAX) {
+    if (op_logic->op < ONE_LOGIC_OP_MAX) {
         info.one_obj.obj_type = op_logic->obj1_type;
         info.one_obj.obj_subtype = op_logic->obj1_subtype;
         info.one_obj.obj_id = op_logic->obj1_id;
@@ -301,7 +301,7 @@ static int test_core_proc_LOGIC(test_core_op_info_s *op_info, test_core_s *core)
 
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
-        core_log("[test_core] LOGIC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]",
+        core_log("[test_core] LOGIC op[%u] obj1_id[%u] obj2_id[%u] failed, ret[%d]\n",
             op_logic->op, op_logic->obj1_id, op_logic->obj2_id, ret);
     }
     return EC_OK;
@@ -326,7 +326,7 @@ struct {
     { TEST_CORE_OP_FIND, test_core_proc_FIND },
     { TEST_CORE_OP_SET, test_core_proc_SET },
     { TEST_CORE_OP_GET, test_core_proc_GET },
-    { TEST_CORE_OP_CVT, test_core_proc_GET },
+    { TEST_CORE_OP_CVT, test_core_proc_CVT },
     { TEST_CORE_OP_CALC, test_core_proc_CALC },
     { TEST_CORE_OP_LOGIC, test_core_proc_LOGIC },
     { TEST_CORE_OP_REG, test_core_proc_REG },

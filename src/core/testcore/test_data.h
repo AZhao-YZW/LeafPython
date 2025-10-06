@@ -123,7 +123,7 @@ static int get_##t##_##st(void *obj, void *val) { \
 }
 #define DEFINE_OBJ_LOGIC_NOT_FUNC(t, st, loc, vt) \
 static int logic_not_##t##_##st(void *obj, void *val) { \
-    *(bool *)val = !OBJ_VAL(obj, loc, vt); \
+    *(bool *)val = !OBJ_VAL(obj, loc, vt) ? true : false; \
     return EC_OK; \
 }
 
@@ -212,12 +212,12 @@ static int lt_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
 }
 #define DEFINE_OBJ_LOGIC_AND_FUNC(t, st, loc, vt) \
 static int logic_and_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
-    *(bool *)val = OBJ_VAL(obj1, loc, vt) && OBJ_VAL(obj2, loc, vt); \
+    *(vt *)val = !OBJ_VAL(obj1, loc, vt) ? OBJ_VAL(obj1, loc, vt) : OBJ_VAL(obj2, loc, vt); \
     return EC_OK; \
 }
 #define DEFINE_OBJ_LOGIC_OR_FUNC(t, st, loc, vt) \
 static int logic_or_##t##_##st(void *obj1, void *obj2, void *val, u32 val_len) { \
-    *(bool *)val = OBJ_VAL(obj1, loc, vt) || OBJ_VAL(obj2, loc, vt); \
+    *(vt *)val = !OBJ_VAL(obj1, loc, vt) ? OBJ_VAL(obj2, loc, vt) : OBJ_VAL(obj1, loc, vt); \
     return EC_OK; \
 }
 

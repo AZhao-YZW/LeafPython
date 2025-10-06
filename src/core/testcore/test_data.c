@@ -119,11 +119,11 @@ DEFINE_TWO_OBJ_NA_FUNC(logic_or, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)
 static int OBJ_FUNC_NAME(add, OBJ_TYPE_STRING, NO_OBJ_SUBTYPE)(void *obj1, void *obj2, void *val, u32 val_len)
 {
     int ret;
-    ret = libstr_strcpy_s((char *)val, val_len, ((string_obj_s *)obj1)->val);
+    ret = libstr_strcpy_s(*(char **)val, val_len, ((string_obj_s *)obj1)->val);
     if (ret != EC_OK) {
         return ret;
     }
-    ret = libstr_strcat_s((char *)val, val_len, ((string_obj_s *)obj2)->val);
+    ret = libstr_strcat_s(*(char **)val, val_len, ((string_obj_s *)obj2)->val);
     if (ret != EC_OK) {
         return ret;
     }

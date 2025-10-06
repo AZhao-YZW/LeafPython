@@ -148,7 +148,7 @@ typedef struct {
 } test_core_op_LOGIC;
 
 typedef struct {
-    bool ret_bool;;
+    void *obj_val;
 } test_core_res_LOGIC;
 
 typedef struct {
