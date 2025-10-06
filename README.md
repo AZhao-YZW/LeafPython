@@ -10,6 +10,17 @@ cd LeafPython
 git submodule update --init --recursive
 ```
 
+## Build & Run Project
+
+```sh
+cd build
+source completion.sh
+./leafpy_test.sh -h
+# example:
+# ./leafpy_test.sh build -t demo -c file_mode
+# ./leafpy_test.sh run -t demo -c file_mode
+```
+
 ## Run Tests
 
 ### Use C++ TestMate extension to run tests
@@ -36,9 +47,9 @@ git submodule update --init --recursive
 ```
 ### Or use leafpy_test.sh to run tests
 
-1. enter `/build` directory
+1. enter `build` directory
 2. run command:
 ```sh
-./leafpy_test.sh llt -t <test_dir_name>
+./leafpy_test.sh build -t <llt/hlt/benchmark> -c <case>
 ```
 where `<test_dir_name>` is one of the following: `lib_test`, `core_test/testcore_test`, `core_test/leafpy_test`
