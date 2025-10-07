@@ -29,7 +29,6 @@ extern "C" {
 
 #include "type.h"
 #include "test_data.h"
-#include "log.h"
 
 enum test_core_op_e {
     TEST_CORE_OP_NEW,
@@ -66,7 +65,7 @@ typedef struct {
     u8 obj_type;
     u8 obj_subtype;
     u32 obj_id;
-    void *obj_val;
+    const void *obj_val;
 } test_core_op_SET;
 
 typedef struct {
@@ -200,7 +199,7 @@ static inline void test_core_op_del_fill(u32 obj_id, test_core_op_info_s *op_inf
     op_info->info.op_del.obj_id = obj_id;
 }
 
-static inline void test_core_op_set_fill(u8 obj_type, u8 obj_subtype, u32 obj_id, void *set_val,
+static inline void test_core_op_set_fill(u8 obj_type, u8 obj_subtype, u32 obj_id, const void *set_val,
     test_core_op_info_s *op_info)
 {
     op_info->op = TEST_CORE_OP_SET;
@@ -266,6 +265,8 @@ int test_core_register_cfunc(register_cfunc_s *reg_cfunc);
 test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);
 int test_core_add(u8 core_id);
+int test_core_obj_get_type(u8 core_id, u32 obj_id, u8 *obj_type, u8 *obj_subtype);
+
 void test_core_print_obj_list(u8 core_id);
 
 #ifdef __cplusplus

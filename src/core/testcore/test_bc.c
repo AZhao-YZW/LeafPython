@@ -110,7 +110,7 @@ int test_bc_proc_MOV_val(test_bc_s *bc)
 
     // MOV <obj_id> <value>
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, &bc->args.bc_mov.val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc, 1, bc->args.bc_mov.val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] MOV: set obj_id1 value error, ret[%d]\n", ret);
@@ -137,8 +137,8 @@ static int test_bc_proc_INC_DEC(test_bc_s *bc, bool is_inc)
     } val = {0};
     int ret;
 
-    if (bc->args.obj_type1 != OBJ_TYPE_NUMBER || bc->args.obj_subtype1 != NUM_TYPE_INT ||
-        bc->args.obj_subtype1 != NUM_TYPE_FLOAT) {
+    if (bc->args.obj_type1 != OBJ_TYPE_NUMBER ||
+        (bc->args.obj_subtype1 != NUM_TYPE_INT && bc->args.obj_subtype1 != NUM_TYPE_FLOAT)) {
         log_printf(LOG_WARN, "[test_bc] INC_DEC[%u]: type[%u,%u] unsupport\n",
             is_inc, bc->args.obj_type1, bc->args.obj_subtype1);
         return EC_UNSUPPORT_OP;
@@ -157,7 +157,7 @@ static int test_bc_proc_INC_DEC(test_bc_s *bc, bool is_inc)
     if (bc->args.obj_subtype1 == NUM_TYPE_INT) {
         val.int_val += is_inc ? 1 : -1;
     } else {
-        val.float_val += is_inc ? 1 : -1;
+        val.float_val += is_inc ? 1.0 : -1.0;
     }
     // set obj_id value
     TEST_BC_CORE_OP_SET_FILL(bc, 1, &val, op_info);

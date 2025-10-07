@@ -91,7 +91,7 @@ static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
             .obj_subtype = op_set->obj_subtype,
             .obj_id = op_set->obj_id,
         },
-        .ret_val = op_set->obj_val,
+        .ret_val = (void *)op_set->obj_val,
         .global_obj = core->global_obj,
     };
     int ret;
@@ -450,6 +450,29 @@ int test_core_add(u8 core_id)
     core->core_id = core_id;
     list_add_tail(&core->node, &g_core_list);
     return EC_OK;
+}
+
+int test_core_obj_get_type(u8 core_id, u32 obj_id, u8 *obj_type, u8 *obj_subtype)
+{
+    test_core_s *core = NULL;
+    int ret;
+
+    if (obj_type == NULL || obj_subtype == NULL) {
+        core_log("[test_core] obj get type param invalid, core_id[%u], obj_id[%u]\n", core_id, obj_id);
+        return EC_PARAM_INVALID;
+    }
+    list_for_each_entry(core, &g_core_list, node) {
+        if (core->core_id == core_id) {
+            ret = test_data_obj_get_type_by_id(obj_id, core->global_obj, obj_type, obj_subtype);
+            if (ret != EC_OK) {
+                core_log("[test_core] obj get type failed, core_id[%u], obj_id[%u], ret[%d]\n",
+                    core_id, obj_id, ret);
+            }
+            return ret;
+        }
+    }
+    core_log("[test_core] obj get type core_id[%u] invalid, obj_id[%u]\n", core_id, obj_id);
+    return EC_CORE_ID_INVALID;
 }
 
 void test_core_print_obj_list(u8 core_id)

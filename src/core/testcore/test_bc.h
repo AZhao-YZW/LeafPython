@@ -74,7 +74,7 @@ typedef struct {
     u32 obj_id1;
     union {
         u32 obj_id2;
-        u64 val;
+        const void *val;
     };
 } test_bc_2_args;
 
@@ -88,11 +88,11 @@ typedef struct {
         } t1;
         struct {
             u32 obj_id2;
-            u64 val1;
+            const void *val1;
         } t2;
         struct {
-            u64 val1;
-            u64 val2;
+            const void *val1;
+            const void *val2;
         } t3;
     };
 } test_bc_3_args;
