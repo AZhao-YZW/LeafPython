@@ -29,10 +29,20 @@
 #include "test_frame.h"
 #include "test_bc.h"
 
+static int test_bc_cb(test_bc_s *bc)
+{
+    log_printf(LOG_DEBUG,
+        "test_bc_cb: op[%u] arg1[0x%llx(%llu)] arg2[0x%llx(%llu)] arg3[0x%llx(%llu)] "
+        "bc_res[0x%llx(%llu)] pos[0x%llx] next_pos[0x%llx]\n",
+        bc->op, bc->args.arg[0], bc->args.arg[0], bc->args.arg[1], bc->args.arg[1], bc->args.arg[2],
+        bc->args.arg[2], bc->bc_res, bc->bc_res, bc->pos, bc->next_pos);
+    return EC_OK;
+}
+
 static int test_vm_run_bc(test_vm_s *vm, test_bc_s *bc)
 {
     int ret;
-    ret = test_bc_proc(bc);
+    ret = test_bc_proc(bc, test_bc_cb);
     if (ret != EC_OK) {
         core_log("[test_vm] run bc failed, ret[%d]\n", ret);
     }
@@ -87,6 +97,7 @@ int test_vm_init(u8 core_id, u8 frame_q_id)
         core_log("[test_vm] init register frame failed, core_id[%u]\n", core_id);
         return ret;
     }
+    vm->pc = 0;
     return EC_OK;
 }
 

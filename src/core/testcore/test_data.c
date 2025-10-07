@@ -289,7 +289,6 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, boo
         { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_INT),     sizeof(int_obj_s) },
         { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_FLOAT),   sizeof(float_obj_s) },
         { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_BOOL),    sizeof(bool_obj_s) },
-        { OBJ_UNION_TYPE(OBJ_TYPE_BOOL,   NO_OBJ_SUBTYPE),   sizeof(bool_obj_s) },
         { OBJ_UNION_TYPE(OBJ_TYPE_NUMBER, NUM_TYPE_COMPLEX), sizeof(complex_obj_s) },
         { OBJ_UNION_TYPE(OBJ_TYPE_STRING, NO_OBJ_SUBTYPE),   sizeof(string_obj_s) },
         { OBJ_UNION_TYPE(OBJ_TYPE_LIST,   NO_OBJ_SUBTYPE),   sizeof(list_obj_s) },
@@ -318,7 +317,7 @@ static int test_data_get_obj_size(u8 obj_type, u8 obj_subtype, u8 *obj_size, boo
 }
 
 int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 parent_id,
-                      global_obj_s *global_obj)
+                      global_obj_s *global_obj, u32 *ret_obj_id)
 {
     obj_base_attr_s *parent_attr = NULL;
     obj_base_attr_s *obj_attr = NULL;
@@ -358,7 +357,7 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
     obj_attr->obj_subtype = obj_subtype;
     obj_attr->free_flag = false;
     obj_attr->layer = parent_attr->layer + 1;
-    obj_attr->obj_id = global_obj->obj_id_cnt;
+    obj_attr->obj_id = global_obj->obj_id_cnt;  // TODO: use uuid instead
     obj_attr->parent_id = parent_attr->obj_id;
     obj_attr->child_num = 0;
     obj_attr->obj_name = (char *)obj_name;
@@ -369,6 +368,9 @@ int test_data_obj_new(u8 obj_type, u8 obj_subtype, const char *obj_name, u32 par
     global_obj->obj_id_cnt++;
     if (CAN_ROOT_MOUNTED(obj_type, global_obj->is_root_mounted)) {
         global_obj->is_root_mounted = true;
+    }
+    if (ret_obj_id != NULL) {
+        *ret_obj_id = obj_attr->obj_id;
     }
     return ret;
 }
@@ -420,6 +422,18 @@ int test_data_obj_get_name_len_by_id(u32 obj_id, global_obj_s *global_obj, u8 *o
     return EC_OK;
 }
 
+int test_data_obj_get_type_by_id(u32 obj_id, global_obj_s *global_obj, u8 *obj_type, u8 *obj_subtype)
+{
+    obj_base_attr_s *obj_attr = test_data_find_obj_by_id(obj_id, global_obj);
+    if (obj_attr == NULL) {
+        core_log("[test_data] find obj_id[%u] failed\n", obj_id);
+        return EC_OBJ_NOT_FOUND;
+    }
+    *obj_type = obj_attr->obj_type;
+    *obj_subtype = obj_attr->obj_subtype;
+    return EC_OK;
+}
+
 int test_data_init(global_obj_s **global_obj)
 {
     static char global_obj_name[] = GLOBAL_OBJ_NAME;
@@ -455,7 +469,7 @@ int test_data_init(global_obj_s **global_obj)
 
     /* new root obj */
     ret = test_data_obj_new(OBJ_TYPE_ROOT, NO_OBJ_SUBTYPE, root_obj_name,
-                            GLOBAL_OBJ_ID, *global_obj);
+                            GLOBAL_OBJ_ID, *global_obj, NULL);
     if (ret != EC_OK) {
         core_log("[test_data] new obj failed, ret[%d]\n", ret);
         return ret;

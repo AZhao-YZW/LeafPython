@@ -31,6 +31,8 @@ extern "C" {
 
 enum test_bc_op_e {
     TEST_BC_NOP = 0,
+    TEST_BC_NEW,
+    TEST_BC_DEL,
     TEST_BC_MOV,
     TEST_BC_INC,
     TEST_BC_DEC,
@@ -50,16 +52,98 @@ enum test_bc_op_e {
     TEST_BC_MAX
 };
 
+enum test_bc_MOV_op_e {
+    TEST_BC_MOV_OBJ = 0,
+    TEST_BC_MOV_VAL,
+    TEST_BC_MOV_MAX
+};
+
+typedef struct {
+    char *obj_name;
+} test_bc_NEW;
+
+typedef struct {
+    u32 obj_id;
+} test_bc_NEW_res;
+
+typedef struct {
+    u32 obj_id;
+} test_bc_1_arg;
+
+typedef struct {
+    u32 obj_id1;
+    union {
+        u32 obj_id2;
+        u64 val;
+    };
+} test_bc_2_args;
+
+typedef struct {
+    u32 val_len;
+    u32 obj_id1;
+    union {
+        struct {
+            u32 obj_id2;
+            u32 obj_id3;
+        } t1;
+        struct {
+            u32 obj_id2;
+            u64 val1;
+        } t2;
+        struct {
+            u64 val1;
+            u64 val2;
+        } t3;
+    };
+} test_bc_3_args;
+
+// TODO: tempolary solution only support obj_id arg, for example:
+// MOV <obj_id1> <obj_id2>
+// ADD <obj_id1> <obj_id2> <obj_id3>
 typedef struct test_bc_s {
     u8 op;      /* enum test_bc_op_e */
-    u32 arg1;
-    u32 arg2;
-    u32 arg3;
-    u32 pos;
-    u32 next_pos;
+    u8 sub_op;
+    u8 core_id;
+    u8 rsv;
+    u32 parent_id;
+    struct {
+        struct {
+            u8 obj_type1;
+            u8 obj_subtype1;
+            u8 obj_type2;
+            u8 obj_subtype2;
+            u8 obj_type3;
+            u8 obj_subtype3;
+            u8 rsv[2];
+        };
+        union {
+            u64 arg[3];
+            test_bc_NEW bc_new;
+            test_bc_1_arg bc_del;
+            test_bc_1_arg bc_inc;
+            test_bc_1_arg bc_dec;
+            test_bc_2_args bc_mov;
+            test_bc_3_args bc_add;
+            test_bc_3_args bc_sub;
+            test_bc_3_args bc_mul;
+            test_bc_3_args bc_div;
+            test_bc_3_args bc_cmp;
+        };
+    } args;
+    union {
+        u64 bc_res;
+        test_bc_NEW_res bc_new_res;
+    };
+    u64 pos;
+    u64 next_pos;
 } test_bc_s;
 
-int test_bc_proc(test_bc_s *bc);
+#define BUILD_CHECK_TEST_BC_ARGS_SIZE() \
+    BUILD_BUG_ON(sizeof(((test_bc_s*)0)->args) != 4 * sizeof(u64))
+
+typedef int (*test_bc_cb_t)(test_bc_s *bc);
+
+int test_bc_proc(test_bc_s *bc, test_bc_cb_t cb);
 
 #ifdef __cplusplus
 }

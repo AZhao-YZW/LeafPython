@@ -32,6 +32,7 @@
 static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
 {
     test_core_op_NEW *op_new = &op_info->info.op_new;
+    test_core_res_NEW *res_new = &op_info->result.res_new;
     int ret;
 
     if (op_new->obj_name_len > LEAFPY_MAX_OBJ_NAME_LEN) {
@@ -39,7 +40,7 @@ static int test_core_proc_NEW(test_core_op_info_s *op_info, test_core_s *core)
         return EC_OBJ_NAME_LEN_EXCEED;
     }
     ret = test_data_obj_new(op_new->obj_type, op_new->obj_subtype, op_new->obj_name,
-                            op_new->parent_id, core->global_obj);
+                            op_new->parent_id, core->global_obj, &res_new->obj_id);
     if (ret != EC_OK) {
         core_log("[test_core] NEW obj_name[%s] obj_type[%u] obj_subtype[%u] failed, ret[%d]\n",
             op_new->obj_name, op_new->obj_type, op_new->obj_subtype, ret);
@@ -109,14 +110,19 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
     obj_op_info_s info = {
         .op = OBJ_OP_GET,
         .one_obj = {
-            .obj_type = op_get->obj_type,
-            .obj_subtype = op_get->obj_subtype,
             .obj_id = op_get->obj_id,
         },
         .ret_val = res_get->obj_val,
         .global_obj = core->global_obj,
     };
     int ret;
+
+    ret = test_data_obj_get_type_by_id(op_get->obj_id, core->global_obj,
+        &info.one_obj.obj_type, &info.one_obj.obj_subtype);
+    if (ret != EC_OK) {
+        core_log("[test_core] GET get obj_id[%u] type failed, ret[%d]\n", op_get->obj_id, ret);
+        return ret;
+    }
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
         core_log("[test_core] GET obj_id[%u] failed, ret[%d]\n", op_get->obj_id, ret);
@@ -149,8 +155,6 @@ static int test_core_proc_CVT(test_core_op_info_s *op_info, test_core_s *core)
 
     // GET
     tmp_info.op = TEST_CORE_OP_GET;
-    tmp_info.info.op_get.obj_type = op_cvt->cur_type;
-    tmp_info.info.op_get.obj_subtype = op_cvt->cur_subtype;
     tmp_info.info.op_get.obj_id = op_cvt->cur_obj_id;
     tmp_info.result.res_get.obj_val = &res_val;
     ret = test_core_proc_GET(&tmp_info, core);
