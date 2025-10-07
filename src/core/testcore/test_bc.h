@@ -120,13 +120,9 @@ typedef struct test_bc_s {
             u64 arg[3];
             test_bc_NEW bc_new;
             test_bc_1_arg bc_del;
-            test_bc_1_arg bc_inc;
-            test_bc_1_arg bc_dec;
+            test_bc_1_arg bc_inc_dec;
             test_bc_2_args bc_mov;
-            test_bc_3_args bc_add;
-            test_bc_3_args bc_sub;
-            test_bc_3_args bc_mul;
-            test_bc_3_args bc_div;
+            test_bc_3_args bc_add_sub_mul_div;
             test_bc_3_args bc_cmp;
         };
     } args;

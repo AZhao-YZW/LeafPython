@@ -33,17 +33,15 @@
 #define TEST_BC_CORE_OP_DEL_FILL(bc, op_info) \
     test_core_op_del_fill(bc->args.bc_del.obj_id, &op_info)
 
-#define TEST_BC_CORE_OP_SET_FILL(bc, tn, set_val, op_info) \
-    test_core_op_set_fill(bc->args.obj_type##tn, bc->args.obj_subtype##tn, \
-        bc->args.bc_mov.obj_id##tn, set_val, &op_info)
+#define TEST_BC_CORE_OP_SET_FILL(obj_id, set_val, op_info) \
+    test_core_op_set_fill(obj_id, set_val, &op_info)
 
 #define TEST_BC_CORE_OP_GET_FILL(bc, tn, get_val, op_info) \
     test_core_op_get_fill(bc->args.bc_mov.obj_id##tn, get_val, &op_info)
 
 #define TEST_BC_CORE_OP_CACL_FILL(bc, tn1, tn2, calc_op, res_val, op_info) \
-    test_core_op_cacl_fill(calc_op, bc->args.obj_type##tn1, bc->args.obj_subtype##tn1, \
-        bc->args.bc_add.t1.obj_id##tn1, bc->args.obj_type##tn2, bc->args.obj_subtype##tn2, \
-        bc->args.bc_add.t1.obj_id##tn2, res_val, bc->args.bc_add.val_len, &op_info)
+    test_core_op_cacl_fill(calc_op, bc->args.bc_add_sub_mul_div.t1.obj_id##tn1, \
+        bc->args.bc_add_sub_mul_div.t1.obj_id##tn2, res_val, bc->args.bc_add_sub_mul_div.val_len, &op_info)
 
 #define TEST_BC_CORE_OP_LOGIC_FILL(bc, tn1, tn2, logic_op, res_val, op_info) \
     test_core_op_logic_fill(logic_op, bc->args.obj_type##tn1, bc->args.obj_subtype##tn1, \
@@ -94,7 +92,7 @@ int test_bc_proc_MOV_obj(test_bc_s *bc)
         return ret;
     }
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_mov.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] MOV: set obj_id1 value error, ret[%d]\n", ret);
@@ -110,7 +108,7 @@ int test_bc_proc_MOV_val(test_bc_s *bc)
 
     // MOV <obj_id> <value>
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, bc->args.bc_mov.val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_mov.obj_id1, bc->args.bc_mov.val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] MOV: set obj_id1 value error, ret[%d]\n", ret);
@@ -160,7 +158,7 @@ static int test_bc_proc_INC_DEC(test_bc_s *bc, bool is_inc)
         val.float_val += is_inc ? 1.0 : -1.0;
     }
     // set obj_id value
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_inc_dec.obj_id, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] INC_DEC[%u]: set obj_id value error, ret[%d]\n",
@@ -196,7 +194,7 @@ static int test_bc_proc_CALC(test_bc_s *bc, enum test_core_calc_op_e calc_op)
         return ret;
     }
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_add_sub_mul_div.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] CACL: calc_op[%u] set obj_id1 value error, ret[%d]\n",
@@ -266,7 +264,7 @@ int test_bc_proc_CMP(test_bc_s *bc)
     val = -1;
 
 set_val_out:
-    TEST_BC_CORE_OP_SET_FILL(bc, 1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_cmp.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] CMP: set obj_id1 value[%llu] error, ret[%d]\n",

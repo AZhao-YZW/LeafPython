@@ -199,12 +199,9 @@ static inline void test_core_op_del_fill(u32 obj_id, test_core_op_info_s *op_inf
     op_info->info.op_del.obj_id = obj_id;
 }
 
-static inline void test_core_op_set_fill(u8 obj_type, u8 obj_subtype, u32 obj_id, const void *set_val,
-    test_core_op_info_s *op_info)
+static inline void test_core_op_set_fill(u32 obj_id, const void *set_val, test_core_op_info_s *op_info)
 {
     op_info->op = TEST_CORE_OP_SET;
-    op_info->info.op_set.obj_type = obj_type;
-    op_info->info.op_set.obj_subtype = obj_subtype;
     op_info->info.op_set.obj_id = obj_id;
     op_info->info.op_set.obj_val = set_val;
 }
@@ -217,16 +214,11 @@ static inline void test_core_op_get_fill(u32 obj_id, void *get_val, test_core_op
 }
 
 static inline void test_core_op_cacl_fill(enum test_core_calc_op_e calc_op,
-        u8 t1, u8 st1, u8 id1, u8 t2, u8 st2, u8 id2, void *res_val, u32 val_len,
-        test_core_op_info_s *op_info)
+        u8 id1, u8 id2, void *res_val, u32 val_len, test_core_op_info_s *op_info)
 {
     op_info->op = TEST_CORE_OP_CALC;
     op_info->info.op_calc.op = calc_op;
-    op_info->info.op_calc.obj1_type = t1;
-    op_info->info.op_calc.obj1_subtype = st1;
     op_info->info.op_calc.obj1_id = id1;
-    op_info->info.op_calc.obj2_type = t2;
-    op_info->info.op_calc.obj2_subtype = st2;
     op_info->info.op_calc.obj2_id = id2;
     op_info->info.op_calc.val_len = val_len;
     op_info->result.res_calc.obj_val = res_val;

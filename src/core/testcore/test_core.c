@@ -87,14 +87,20 @@ static int test_core_proc_SET(test_core_op_info_s *op_info, test_core_s *core)
     obj_op_info_s info = {
         .op = OBJ_OP_SET,
         .one_obj = {
-            .obj_type = op_set->obj_type,
-            .obj_subtype = op_set->obj_subtype,
             .obj_id = op_set->obj_id,
         },
         .ret_val = (void *)op_set->obj_val,
         .global_obj = core->global_obj,
     };
     int ret;
+
+    ret = test_data_obj_get_type_by_id(op_set->obj_id, core->global_obj,
+        &info.one_obj.obj_type, &info.one_obj.obj_subtype);
+    if (ret != EC_OK) {
+        core_log("[test_core] SET get obj_id[%u] type failed, ret[%d]\n", op_set->obj_id, ret);
+        return ret;
+    }
+
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
         core_log("[test_core] SET obj_id[%u] failed, ret[%d]\n", op_set->obj_id, ret);
@@ -123,6 +129,7 @@ static int test_core_proc_GET(test_core_op_info_s *op_info, test_core_s *core)
         core_log("[test_core] GET get obj_id[%u] type failed, ret[%d]\n", op_get->obj_id, ret);
         return ret;
     }
+
     ret = test_data_obj_op_proc(&info);
     if (ret != EC_OK) {
         core_log("[test_core] GET obj_id[%u] failed, ret[%d]\n", op_get->obj_id, ret);
@@ -235,11 +242,7 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     test_core_res_CALC *res_calc = &op_info->result.res_calc;
     obj_op_info_s info = {
         .two_obj = {
-            .obj1_type = op_calc->obj1_type,
-            .obj1_subtype = op_calc->obj1_subtype,
             .obj1_id = op_calc->obj1_id,
-            .obj2_type = op_calc->obj2_type,
-            .obj2_subtype = op_calc->obj2_subtype,
             .obj2_id = op_calc->obj2_id,
         },
         .ret_val_len = op_calc->val_len,
@@ -251,6 +254,19 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     if (info.op >= CALC_OP_NUM) {
         core_log("[test_core] CALC unsupport op[%d]\n", op_calc->op);
         return EC_UNSUPPORT_OP;
+    }
+
+    ret = test_data_obj_get_type_by_id(op_calc->obj1_id, core->global_obj,
+        &info.two_obj.obj1_type, &info.two_obj.obj1_subtype);
+    if (ret != EC_OK) {
+        core_log("[test_core] CALC get obj1_id[%u] type failed, ret[%d]\n", op_calc->obj1_id, ret);
+        return ret;
+    }
+    ret = test_data_obj_get_type_by_id(op_calc->obj2_id, core->global_obj,
+        &info.two_obj.obj2_type, &info.two_obj.obj2_subtype);
+    if (ret != EC_OK) {
+        core_log("[test_core] CALC get obj2_id[%u] type failed, ret[%d]\n", op_calc->obj2_id, ret);
+        return ret;
     }
 
     info.op = calc_obj_op_map[op_calc->op];
