@@ -30,35 +30,10 @@ extern "C" {
 #include "type.h"
 #include "error_code.h"
 #include "list.h"
+#include "test_obj_type.h"
 
 #define GLOBAL_OBJ_LAYER    0
-#define GLOBAL_OBJ_ID       0
-#define GLOBAL_OBJ_NAME     "global_obj"
 #define ROOT_OBJ_LAYER      1
-#define ROOT_OBJ_ID         1
-#define ROOT_OBJ_NAME       "root_obj"
-
-enum obj_type_e {
-    OBJ_TYPE_GLOBAL,   // global (special)
-    OBJ_TYPE_ROOT,     // root (special)
-    OBJ_TYPE_OBJECT,   // object
-    OBJ_TYPE_NUMBER,   // Number
-    OBJ_TYPE_STRING,   // String
-    OBJ_TYPE_LIST,     // List
-    OBJ_TYPE_TUPLE,    // Tuple
-    OBJ_TYPE_SET,      // Set
-    OBJ_TYPE_DICT,     // Dict
-    OBJ_TYPE_MAX,
-};
-
-#define NO_OBJ_SUBTYPE  0
-
-enum number_type_e {
-    NUM_TYPE_INT,       // int
-    NUM_TYPE_FLOAT,     // float
-    NUM_TYPE_BOOL,      // bool
-    NUM_TYPE_COMPLEX,   // complex
-};
 
 #define OBJ_UNION_TYPE(t, st) ((u16)(t) << 8 | (u16)(st))
 #define OBJ_UNION_TYPE_SIMPLE(t, st) OBJ_UNION_TYPE(OBJ_TYPE_##t, st)

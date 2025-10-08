@@ -449,6 +449,16 @@ int test_core_free(u8 core_id)
     return EC_CORE_ID_INVALID;
 }
 
+void test_core_free_all(void)
+{
+    test_core_s *core = NULL;
+    test_core_s *next = NULL;
+    list_for_each_entry_safe(core, next, &g_core_list, node) {
+        list_del(&core->node);
+        mm_free(core);
+    }
+}
+
 int test_core_add(u8 core_id)
 {
     test_core_s *core = NULL;

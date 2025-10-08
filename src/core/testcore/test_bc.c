@@ -31,22 +31,22 @@
         bc->parent_id, bc->args.bc_new.obj_name, &op_info)
 
 #define TEST_BC_CORE_OP_DEL_FILL(bc, op_info) \
-    test_core_op_del_fill(bc->args.bc_del.obj_id, &op_info)
+    test_core_op_del_fill(bc->args.bc_1_arg.obj_id, &op_info)
 
 #define TEST_BC_CORE_OP_SET_FILL(obj_id, set_val, op_info) \
     test_core_op_set_fill(obj_id, set_val, &op_info)
 
 #define TEST_BC_CORE_OP_GET_FILL(bc, tn, get_val, op_info) \
-    test_core_op_get_fill(bc->args.bc_mov.obj_id##tn, get_val, &op_info)
+    test_core_op_get_fill(bc->args.bc_2_args.obj_id##tn, get_val, &op_info)
 
 #define TEST_BC_CORE_OP_CACL_FILL(bc, tn1, tn2, calc_op, res_val, op_info) \
-    test_core_op_cacl_fill(calc_op, bc->args.bc_add_sub_mul_div.t1.obj_id##tn1, \
-        bc->args.bc_add_sub_mul_div.t1.obj_id##tn2, res_val, bc->args.bc_add_sub_mul_div.val_len, &op_info)
+    test_core_op_cacl_fill(calc_op, bc->args.bc_3_args.t1.obj_id##tn1, \
+        bc->args.bc_3_args.t1.obj_id##tn2, res_val, bc->args.bc_3_args.val_len, &op_info)
 
 #define TEST_BC_CORE_OP_LOGIC_FILL(bc, tn1, tn2, logic_op, res_val, op_info) \
     test_core_op_logic_fill(logic_op, bc->args.obj_type##tn1, bc->args.obj_subtype##tn1, \
-        bc->args.bc_cmp.t1.obj_id##tn1, bc->args.obj_type##tn2, bc->args.obj_subtype##tn2, \
-        bc->args.bc_cmp.t1.obj_id##tn2, res_val, bc->args.bc_cmp.val_len, &op_info)
+        bc->args.bc_3_args.t1.obj_id##tn1, bc->args.obj_type##tn2, bc->args.obj_subtype##tn2, \
+        bc->args.bc_3_args.t1.obj_id##tn2, res_val, bc->args.bc_3_args.val_len, &op_info)
 
 int test_bc_proc_NOP(test_bc_s *bc)
 {
@@ -92,7 +92,7 @@ int test_bc_proc_MOV_obj(test_bc_s *bc)
         return ret;
     }
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_mov.obj_id1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_2_args.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] MOV: set obj_id1 value error, ret[%d]\n", ret);
@@ -108,7 +108,7 @@ int test_bc_proc_MOV_val(test_bc_s *bc)
 
     // MOV <obj_id> <value>
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_mov.obj_id1, bc->args.bc_mov.val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_2_args.obj_id1, bc->args.bc_2_args.val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] MOV: set obj_id1 value error, ret[%d]\n", ret);
@@ -158,7 +158,7 @@ static int test_bc_proc_INC_DEC(test_bc_s *bc, bool is_inc)
         val.float_val += is_inc ? 1.0 : -1.0;
     }
     // set obj_id value
-    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_inc_dec.obj_id, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_1_arg.obj_id, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] INC_DEC[%u]: set obj_id value error, ret[%d]\n",
@@ -194,7 +194,7 @@ static int test_bc_proc_CALC(test_bc_s *bc, enum test_core_calc_op_e calc_op)
         return ret;
     }
     // set obj_id1 value
-    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_add_sub_mul_div.obj_id1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_3_args.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] CACL: calc_op[%u] set obj_id1 value error, ret[%d]\n",
@@ -264,7 +264,7 @@ int test_bc_proc_CMP(test_bc_s *bc)
     val = -1;
 
 set_val_out:
-    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_cmp.obj_id1, &val, op_info);
+    TEST_BC_CORE_OP_SET_FILL(bc->args.bc_3_args.obj_id1, &val, op_info);
     ret = test_core_run(bc->core_id, &op_info);
     if (ret != EC_OK) {
         log_printf(LOG_WARN, "[test_bc] CMP: set obj_id1 value[%llu] error, ret[%d]\n",
@@ -276,21 +276,14 @@ set_val_out:
 
 int test_bc_proc_JZ(test_bc_s *bc)
 {
-    if (bc->args.arg[0] == 0) {
-        bc->next_pos = bc->args.arg[0];
-    }
 }
 
 int test_bc_proc_JNZ(test_bc_s *bc)
 {
-    if (bc->args.arg[0] != 0) {
-        bc->next_pos = bc->args.arg[1];
-    }
 }
 
 int test_bc_proc_JMP(test_bc_s *bc)
 {
-    bc->next_pos = bc->args.arg[0];
 }
 
 int test_bc_proc_PRINT(test_bc_s *bc)
@@ -338,26 +331,46 @@ struct {
     { TEST_BC_FUNC, test_bc_proc_FUNC },
 };
 
-int test_bc_proc(test_bc_s *bc, test_bc_cb_t cb)
+int test_bc_proc(test_bc_s *bc, test_bc_cb_t pre, test_bc_cb_t post)
 {
     BUILD_CHECK_TEST_BC_ARGS_SIZE();
 
     int i, ret;
     for (i = 0; i < ARRAY_SIZE(g_test_bc_map); i++) {
         if (g_test_bc_map[i].op == bc->op) {
+            // pre handle
+            if (pre != NULL) {
+                ret = pre(bc);
+                if (ret != 0) {
+                    core_log("[test_bc] test_bc_proc pre ret[%d]\n", ret);
+                    return ret;
+                }
+            }
+            // main proc
             ret = g_test_bc_map[i].proc(bc);
             if (ret != EC_OK) {
                 core_log("[test_bc] test_bc_proc error, bc_op[%u] sub_op[%u] ret[%d]\n",
                     bc->op, bc->sub_op, ret);
                 return ret;
             }
-            ret = cb(bc);
-            if (ret != 0) {
-                core_log("[test_bc] test_bc_proc cb ret[%d]\n", ret);
+            // post handle
+            if (post != NULL) {
+                ret = post(bc);
+                if (ret != 0) {
+                    core_log("[test_bc] test_bc_proc post ret[%d]\n", ret);
+                    return ret;
+                }
             }
-            return ret;
+            return EC_OK;
         }
     }
-    log_printf(LOG_ERROR, "unknown op: %u\n", bc->op);
+    log_printf(LOG_ERROR, "[test_bc] unknown op: %u\n", bc->op);
     return EC_UNSUPPORT_OP;
+}
+
+void test_bc_debug_print(test_bc_s *bc)
+{
+    log_printf(LOG_DEBUG, "bc_cb: bc_op[%u] sub_op[%u] parent_id[%u] pos[0x%llx] next_pos[0x%llx]\n",
+            bc->op, bc->sub_op, bc->parent_id, bc->pos, bc->next_pos);
+    test_core_print_obj_list(bc->core_id);
 }

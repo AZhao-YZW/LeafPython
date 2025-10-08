@@ -31,10 +31,22 @@ extern "C" {
 #include "list.h"
 #include "test_frame.h"
 
+/**
+ * obj_vm_id is used by the VM to manage the object.
+ * one obj_vm_id is mapped to one or more obj_id.
+ */
 typedef struct {
     struct list_head node;
+    u32 obj_vm_id;
+    u32 obj_id;
+} test_vm_id_pair_s;
+
+typedef struct {
+    struct list_head node;
+    struct list_head vm_id_map;
     u8 core_id;
-    u32 size;
+    u8 rsv[3];
+    u32 vm_id_map_size;
     u64 pc;
 } test_vm_s;
 
@@ -43,6 +55,10 @@ int test_vm_init(u8 core_id, u8 frame_q_id);
 int test_vm_add(u8 core_id, u8 frame_q_id);
 int test_vm_free(u8 core_id);
 void test_vm_free_all(void);
+int test_vm_id_map_add_pair(u8 core_id, u32 obj_vm_id, u32 obj_id);
+int test_vm_id_map_set_pair(u8 core_id, u32 obj_vm_id, u32 set_obj_id);
+int test_vm_id_map_get_pair(u8 core_id, u32 obj_vm_id, u32 *get_obj_id);
+int test_vm_id_map_del_pair(u8 core_id, u32 obj_vm_id, u32 obj_id);
 
 #ifdef __cplusplus
 }

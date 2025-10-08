@@ -256,6 +256,7 @@ int test_core_init(u8 core_id);
 int test_core_register_cfunc(register_cfunc_s *reg_cfunc);
 test_core_s *test_core_get_core(u8 core_id);
 int test_core_free(u8 core_id);
+void test_core_free_all(void);
 int test_core_add(u8 core_id);
 int test_core_obj_get_type(u8 core_id, u32 obj_id, u8 *obj_type, u8 *obj_subtype);
 

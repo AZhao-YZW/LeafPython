@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2024 AZhao yuzhaowei2002@outlook.com
+ * Copyright (c) 2025 AZhao yuzhaowei2002@outlook.com
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -21,38 +21,37 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-#ifndef _ERROR_H_
-#define _ERROR_H_
+#ifndef _TEST_OBJ_TYPE_H_
+#define _TEST_OBJ_TYPE_H_
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define BUILD_BUG_ON(condition) ((void)sizeof(char[1 - 2*!!(condition)]))
+#define GLOBAL_OBJ_ID       0
+#define GLOBAL_OBJ_NAME     "global_obj"
+#define ROOT_OBJ_ID         1
+#define ROOT_OBJ_NAME       "root_obj"
 
-enum error_code_e {
-    EC_OK                       = 0,
-    EC_PARAM_INVALID            = 1,
-    EC_ALLOC_FAILED             = 2,
-    EC_UNSUPPORT_OP             = 3,
-    EC_TIMEOUT                  = 4,
-    EC_UNKNOWN                  = 5,
-    EC_CORE_ID_INVALID          = 6,
-    EC_CORE_TYPE_INVALID        = 7,
-    EC_OBJ_TYPE_INVALID         = 8,
-    EC_OBJ_ID_INVALID           = 9,
-    EC_OBJ_NOT_DELETABLE        = 10,
-    EC_OBJ_NOT_FOUND            = 11,
-    EC_OBJ_NAME_INVALID         = 12,
-    EC_OBJ_NAME_LEN_EXCEED      = 13,
-    EC_STRING_OPTION_FAILED     = 14,
-    EC_MAY_SUPPORT_LATER        = 15,
-    EC_FRAME_CREATE_FAILED      = 16,
-    EC_FRAME_Q_ID_INVALID       = 17,
-    EC_PARSE_SYNTEX_ERROR       = 18,
-    EC_FRAME_COMBIND_ERROR      = 19,
-    EC_OBJ_VM_ID_INVALID        = 20,
-    EC_OBJ_ARG_TYPE_INVALID     = 21,
-    EC_MAX                      = 0xFFFF
+enum obj_type_e {
+    OBJ_TYPE_GLOBAL,   // global (special)
+    OBJ_TYPE_ROOT,     // root (special)
+    OBJ_TYPE_OBJECT,   // object
+    OBJ_TYPE_NUMBER,   // Number
+    OBJ_TYPE_STRING,   // String
+    OBJ_TYPE_LIST,     // List
+    OBJ_TYPE_TUPLE,    // Tuple
+    OBJ_TYPE_SET,      // Set
+    OBJ_TYPE_DICT,     // Dict
+    OBJ_TYPE_MAX,
+};
+
+#define NO_OBJ_SUBTYPE  0
+
+enum number_type_e {
+    NUM_TYPE_INT,       // int
+    NUM_TYPE_FLOAT,     // float
+    NUM_TYPE_BOOL,      // bool
+    NUM_TYPE_COMPLEX,   // complex
 };
 
 #ifdef __cplusplus

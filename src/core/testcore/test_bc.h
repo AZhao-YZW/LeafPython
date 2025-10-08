@@ -58,8 +58,19 @@ enum test_bc_MOV_op_e {
     TEST_BC_MOV_MAX
 };
 
+enum test_bc_arg_type_e {
+    TEST_BC_ARG_TYPE_NEW = 0,
+    TEST_BC_ARG_TYPE_1_ARG_1_OBJ,
+    TEST_BC_ARG_TYPE_2_ARG_1_OBJ,
+    TEST_BC_ARG_TYPE_2_ARG_2_OBJ,
+    TEST_BC_ARG_TYPE_3_ARG_1_OBJ,
+    TEST_BC_ARG_TYPE_3_ARG_2_OBJ,
+    TEST_BC_ARG_TYPE_3_ARG_3_OBJ,
+    TEST_BC_ARG_TYPE_MAX
+};
+
 typedef struct {
-    char *obj_name;
+    const char *obj_name;
 } test_bc_NEW;
 
 typedef struct {
@@ -97,14 +108,11 @@ typedef struct {
     };
 } test_bc_3_args;
 
-// TODO: tempolary solution only support obj_id arg, for example:
-// MOV <obj_id1> <obj_id2>
-// ADD <obj_id1> <obj_id2> <obj_id3>
 typedef struct test_bc_s {
-    u8 op;      /* enum test_bc_op_e */
+    u8 op;          /* enum test_bc_op_e */
     u8 sub_op;
+    u8 arg_type;    /* enum test_bc_arg_type_e*/
     u8 core_id;
-    u8 rsv;
     u32 parent_id;
     struct {
         struct {
@@ -119,27 +127,87 @@ typedef struct test_bc_s {
         union {
             u64 arg[3];
             test_bc_NEW bc_new;
-            test_bc_1_arg bc_del;
-            test_bc_1_arg bc_inc_dec;
-            test_bc_2_args bc_mov;
-            test_bc_3_args bc_add_sub_mul_div;
-            test_bc_3_args bc_cmp;
+            test_bc_1_arg bc_1_arg;
+            test_bc_2_args bc_2_args;
+            test_bc_3_args bc_3_args;
         };
     } args;
     union {
         u64 bc_res;
         test_bc_NEW_res bc_new_res;
     };
+    // used by upper layer, bc do not use it
     u64 pos;
     u64 next_pos;
+    u32 obj_vm_id1;
+    u32 obj_vm_id2;
+    u32 obj_vm_id3;
+    u8 rsv2[4];
 } test_bc_s;
 
 #define BUILD_CHECK_TEST_BC_ARGS_SIZE() \
     BUILD_BUG_ON(sizeof(((test_bc_s*)0)->args) != 4 * sizeof(u64))
 
+static inline void test_bc_common_fill(enum test_bc_op_e bc_op, u8 core_id, u32 parent_id, test_bc_s *bc)
+{
+    bc->op = bc_op;
+    bc->core_id = core_id;
+    bc->parent_id = parent_id;
+    bc->bc_res = 0;
+}
+
+static inline void test_bc_new_fill(u8 t, u8 st, const char *obj_name, u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_NEW, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_NEW;
+    bc->args.obj_type1 = t;
+    bc->args.obj_subtype1 = st;
+    bc->args.bc_new.obj_name = obj_name;
+}
+
+static inline void test_bc_del_fill(u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_DEL, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_1_ARG_1_OBJ;
+}
+
+static inline void test_bc_mov_obj_fill(u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_MOV, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_2_ARG_2_OBJ;
+    bc->sub_op = TEST_BC_MOV_OBJ;
+}
+
+static inline void test_bc_mov_val_fill(const void *val, u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_MOV, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_1_ARG_1_OBJ;
+    bc->sub_op = TEST_BC_MOV_VAL;
+    bc->args.bc_2_args.val = val;
+}
+
+static inline void test_bc_inc_fill(u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_INC, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_1_ARG_1_OBJ;
+}
+
+static inline void test_bc_dec_fill(u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(TEST_BC_DEC, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_1_ARG_1_OBJ;
+}
+
+static inline void test_bc_calc_fill(enum test_bc_op_e bc_op, u8 c, u8 p, test_bc_s *bc)
+{
+    test_bc_common_fill(bc_op, c, p, bc);
+    bc->arg_type = TEST_BC_ARG_TYPE_3_ARG_3_OBJ;
+}
+
 typedef int (*test_bc_cb_t)(test_bc_s *bc);
 
-int test_bc_proc(test_bc_s *bc, test_bc_cb_t cb);
+int test_bc_proc(test_bc_s *bc, test_bc_cb_t pre, test_bc_cb_t post);
+void test_bc_debug_print(test_bc_s *bc);
 
 #ifdef __cplusplus
 }
