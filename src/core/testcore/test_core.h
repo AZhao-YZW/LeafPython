@@ -214,29 +214,22 @@ static inline void test_core_op_get_fill(u32 obj_id, void *get_val, test_core_op
 }
 
 static inline void test_core_op_cacl_fill(enum test_core_calc_op_e calc_op,
-        u8 id1, u8 id2, void *res_val, u32 val_len, test_core_op_info_s *op_info)
+        u8 id1, u8 id2, void *res_val, test_core_op_info_s *op_info)
 {
     op_info->op = TEST_CORE_OP_CALC;
     op_info->info.op_calc.op = calc_op;
     op_info->info.op_calc.obj1_id = id1;
     op_info->info.op_calc.obj2_id = id2;
-    op_info->info.op_calc.val_len = val_len;
     op_info->result.res_calc.obj_val = res_val;
 }
 
 static inline void test_core_op_logic_fill(enum test_core_logic_op_e logic_op,
-    u8 t1, u8 st1, u8 id1, u8 t2, u8 st2, u8 id2, void *res_val, u32 val_len,
-    test_core_op_info_s *op_info)
+    u8 id1, u8 id2, void *res_val, test_core_op_info_s *op_info)
 {
     op_info->op = TEST_CORE_OP_LOGIC;
     op_info->info.op_logic.op = logic_op;
-    op_info->info.op_logic.obj1_type = t1;
-    op_info->info.op_logic.obj1_subtype = st1;
     op_info->info.op_logic.obj1_id = id1;
-    op_info->info.op_logic.obj2_type = t2;
-    op_info->info.op_logic.obj2_subtype = st2;
     op_info->info.op_logic.obj2_id = id2;
-    op_info->info.op_logic.val_len = val_len;
     op_info->result.res_logic.obj_val = res_val;
 }
 
@@ -260,6 +253,7 @@ void test_core_free_all(void);
 int test_core_add(u8 core_id);
 int test_core_obj_get_type(u8 core_id, u32 obj_id, u8 *obj_type, u8 *obj_subtype);
 
+// debug
 void test_core_print_obj_list(u8 core_id);
 
 #ifdef __cplusplus

@@ -90,7 +90,6 @@ typedef struct {
 } test_bc_2_args;
 
 typedef struct {
-    u32 val_len;
     u32 obj_id1;
     union {
         struct {
@@ -108,7 +107,7 @@ typedef struct {
     };
 } test_bc_3_args;
 
-typedef struct test_bc_s {
+typedef struct {
     u8 op;          /* enum test_bc_op_e */
     u8 sub_op;
     u8 arg_type;    /* enum test_bc_arg_type_e*/
@@ -143,6 +142,7 @@ typedef struct test_bc_s {
     u32 obj_vm_id2;
     u32 obj_vm_id3;
     u8 rsv2[4];
+    const void *exp_val;    // debug check val
 } test_bc_s;
 
 #define BUILD_CHECK_TEST_BC_ARGS_SIZE() \

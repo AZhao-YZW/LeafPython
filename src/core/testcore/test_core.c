@@ -251,7 +251,7 @@ static int test_core_proc_CALC(test_core_op_info_s *op_info, test_core_s *core)
     };
     int ret;
 
-    if (info.op >= CALC_OP_NUM) {
+    if (op_calc->op >= CALC_OP_NUM) {
         core_log("[test_core] CALC unsupport op[%d]\n", op_calc->op);
         return EC_UNSUPPORT_OP;
     }
@@ -301,22 +301,34 @@ static int test_core_proc_LOGIC(test_core_op_info_s *op_info, test_core_s *core)
     };
     int ret;
 
-    if (info.op >= LOGIC_OP_NUM) {
+    if (op_logic->op >= LOGIC_OP_NUM) {
         core_log("[test_core] LOGIC unsupport op[%d]\n", op_logic->op);
         return EC_UNSUPPORT_OP;
     }
     info.op = logic_obj_op_map[op_logic->op];
     if (op_logic->op < ONE_LOGIC_OP_MAX) {
-        info.one_obj.obj_type = op_logic->obj1_type;
-        info.one_obj.obj_subtype = op_logic->obj1_subtype;
         info.one_obj.obj_id = op_logic->obj1_id;
+        ret = test_data_obj_get_type_by_id(op_logic->obj1_id, core->global_obj,
+            &info.one_obj.obj_type, &info.one_obj.obj_subtype);
+        if (ret != EC_OK) {
+            core_log("[test_core] LOGIC get obj_id[%u] type failed, ret[%d]\n", op_logic->obj1_id, ret);
+            return ret;
+        }
     } else {
-        info.two_obj.obj1_type = op_logic->obj1_type;
-        info.two_obj.obj1_subtype = op_logic->obj1_subtype;
         info.two_obj.obj1_id = op_logic->obj1_id;
-        info.two_obj.obj2_type = op_logic->obj2_type;
-        info.two_obj.obj2_subtype = op_logic->obj2_subtype;
         info.two_obj.obj2_id = op_logic->obj2_id;
+        ret = test_data_obj_get_type_by_id(op_logic->obj1_id, core->global_obj,
+            &info.two_obj.obj1_type, &info.two_obj.obj1_subtype);
+        if (ret != EC_OK) {
+            core_log("[test_core] LOGIC get obj1_id[%u] type failed, ret[%d]\n", op_logic->obj1_id, ret);
+            return ret;
+        }
+        ret = test_data_obj_get_type_by_id(op_logic->obj2_id, core->global_obj,
+            &info.two_obj.obj2_type, &info.two_obj.obj2_subtype);
+        if (ret != EC_OK) {
+            core_log("[test_core] LOGIC get obj2_id[%u] type failed, ret[%d]\n", op_logic->obj2_id, ret);
+            return ret;
+        }
     }
 
     ret = test_data_obj_op_proc(&info);

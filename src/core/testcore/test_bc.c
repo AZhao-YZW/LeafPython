@@ -41,12 +41,11 @@
 
 #define TEST_BC_CORE_OP_CACL_FILL(bc, tn1, tn2, calc_op, res_val, op_info) \
     test_core_op_cacl_fill(calc_op, bc->args.bc_3_args.t1.obj_id##tn1, \
-        bc->args.bc_3_args.t1.obj_id##tn2, res_val, bc->args.bc_3_args.val_len, &op_info)
+        bc->args.bc_3_args.t1.obj_id##tn2, res_val, &op_info)
 
 #define TEST_BC_CORE_OP_LOGIC_FILL(bc, tn1, tn2, logic_op, res_val, op_info) \
-    test_core_op_logic_fill(logic_op, bc->args.obj_type##tn1, bc->args.obj_subtype##tn1, \
-        bc->args.bc_3_args.t1.obj_id##tn1, bc->args.obj_type##tn2, bc->args.obj_subtype##tn2, \
-        bc->args.bc_3_args.t1.obj_id##tn2, res_val, bc->args.bc_3_args.val_len, &op_info)
+    test_core_op_logic_fill(logic_op, bc->args.bc_3_args.t1.obj_id##tn1, \
+        bc->args.bc_3_args.t1.obj_id##tn2, res_val, &op_info)
 
 int test_bc_proc_NOP(test_bc_s *bc)
 {
@@ -80,7 +79,7 @@ int test_bc_proc_DEL(test_bc_s *bc)
 int test_bc_proc_MOV_obj(test_bc_s *bc)
 {
     test_core_op_info_s op_info = {0};
-    s64 val = {0};
+    s64 val = 0;
     int ret;
 
     // MOV <obj_id1> <obj_id2>
@@ -181,7 +180,7 @@ int test_bc_proc_DEC(test_bc_s *bc)
 static int test_bc_proc_CALC(test_bc_s *bc, enum test_core_calc_op_e calc_op)
 {
     test_core_op_info_s op_info = {0};
-    s64 val = {0};
+    s64 val = 0;
     int ret;
 
     // [CALC] <obj_id1> <obj_id2> <obj_id3>
@@ -224,16 +223,21 @@ int test_bc_proc_DIV(test_bc_s *bc)
     return test_bc_proc_CALC(bc, CALC_OP_DIV);
 }
 
-// TODO: confirm whether need CMP bytecode
 int test_bc_proc_CMP(test_bc_s *bc)
 {
     test_core_op_info_s op_info = {0};
     s64 cmp_res = 0, val;
     int ret;
 
+    ret = test_core_obj_get_type(bc->core_id, bc->args.bc_3_args.obj_id1, &bc->args.obj_type1, &bc->args.obj_subtype1);
+    if (ret != EC_OK) {
+        log_printf(LOG_WARN, "[test_bc] CMP: get obj_id1[%u] type error, ret[%d]\n",
+            bc->args.bc_3_args.obj_id1, ret);
+        return ret;
+    }
     if (bc->args.obj_type1 != OBJ_TYPE_NUMBER || bc->args.obj_subtype1 != NUM_TYPE_INT) {
-        log_printf(LOG_WARN, "[test_bc] CMP: type[%u,%u] unsupport\n",
-            bc->args.obj_type1, bc->args.obj_subtype1);
+        log_printf(LOG_WARN, "[test_bc] CMP: obj_id1[%u] type[%u,%u] unsupport\n",
+            bc->args.bc_3_args.obj_id1, bc->args.obj_type1, bc->args.obj_subtype1);
         return EC_UNSUPPORT_OP;
     }
 

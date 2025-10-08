@@ -60,6 +60,9 @@ int test_vm_id_map_set_pair(u8 core_id, u32 obj_vm_id, u32 set_obj_id);
 int test_vm_id_map_get_pair(u8 core_id, u32 obj_vm_id, u32 *get_obj_id);
 int test_vm_id_map_del_pair(u8 core_id, u32 obj_vm_id, u32 obj_id);
 
+// debug
+void test_vm_bc_post_check_obj(test_bc_s *bc);
+
 #ifdef __cplusplus
 }
 #endif

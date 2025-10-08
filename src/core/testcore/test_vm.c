@@ -42,15 +42,15 @@ static test_vm_s *test_vm_find_vm(u8 core_id)
     return NULL;
 }
 
-int test_vm_bc_proc_pre(test_bc_s *bc)
+int test_vm_bc_pre(test_bc_s *bc)
 {
     test_vm_s *vm = test_vm_find_vm(bc->core_id);
     int ret;
 
-    log_printf(LOG_DEBUG, "[test_vm] test_vm_bc_proc_pre bc_op: %u\n", bc->op);
+    log_printf(LOG_DEBUG, "[test_vm] test_vm_bc_pre bc_op: %u\n", bc->op);
 
     if (vm == NULL) {
-        core_log("[test_vm] test_vm_bc_proc_pre core_id[%u] not found\n", bc->core_id);
+        core_log("[test_vm] test_vm_bc_pre core_id[%u] not found\n", bc->core_id);
         return EC_CORE_ID_INVALID;
     }
     if (bc->arg_type == TEST_BC_ARG_TYPE_1_ARG_1_OBJ) {
@@ -70,19 +70,23 @@ int test_vm_bc_proc_pre(test_bc_s *bc)
         ret = EC_OBJ_ARG_TYPE_INVALID;
     }
     if (ret != EC_OK) {
-        core_log("[test_vm] test_vm_bc_proc_post failed, bc_op[%u] ret[%d]\n", bc->op, ret);
+        core_log("[test_vm] test_vm_bc_post failed, bc_op[%u] ret[%d]\n", bc->op, ret);
         return ret;
     }
     return EC_OK;
 }
 
-int test_vm_bc_proc_post(test_bc_s *bc)
+void test_vm_bc_post_check_obj(test_bc_s *bc)
+{
+}
+
+int test_vm_bc_post(test_bc_s *bc)
 {
     test_vm_s *vm = test_vm_find_vm(bc->core_id);
     int ret;
 
     if (vm == NULL) {
-        core_log("[test_vm] test_vm_bc_proc_post core_id[%u] not found\n", bc->core_id);
+        core_log("[test_vm] test_vm_bc_post core_id[%u] not found\n", bc->core_id);
         return EC_CORE_ID_INVALID;
     }
     vm->pc = bc->next_pos;
@@ -94,17 +98,18 @@ int test_vm_bc_proc_post(test_bc_s *bc)
         ret = EC_OK;
     }
     if (ret != EC_OK) {
-        core_log("[test_vm] test_vm_bc_proc_post failed, bc_op[%u] ret[%d]\n", bc->op, ret);
+        core_log("[test_vm] test_vm_bc_post failed, bc_op[%u] ret[%d]\n", bc->op, ret);
         return ret;
     }
     test_bc_debug_print(bc);
+    test_vm_bc_post_check_obj(bc);
     return EC_OK;
 }
 
 static int test_vm_run_bc(test_vm_s *vm, test_bc_s *bc)
 {
     int ret;
-    ret = test_bc_proc(bc, test_vm_bc_proc_pre, test_vm_bc_proc_post);
+    ret = test_bc_proc(bc, test_vm_bc_pre, test_vm_bc_post);
     if (ret != EC_OK) {
         core_log("[test_vm] run bc failed, ret[%d]\n", ret);
     }
